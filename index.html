@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Platform Ride Online</title>
+<title>Котость Hangout</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; color: #fff; }
@@ -10,131 +10,184 @@
 
   #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
 
-  #topbar {
-    position: absolute; top: 15px; left: 15px; display: flex; gap: 10px; flex-direction: column;
-  }
-  #roominfo {
-    background: rgba(0,0,0,0.7); padding: 10px 15px; border-radius: 8px;
-    border: 1px solid #0af; font-size: 14px; pointer-events: auto;
-  }
-  #roominfo b { color: #0af; }
-  #roominfo .code { font-size: 20px; letter-spacing: 3px; color: #ff0; cursor: pointer; }
-  #roominfo .code:hover { text-decoration: underline; }
-
-  #players {
-    background: rgba(0,0,0,0.7); padding: 10px 15px; border-radius: 8px;
-    border: 1px solid #0af; font-size: 13px; min-width: 180px;
-  }
-  #players .title { color: #0af; margin-bottom: 6px; font-weight: bold; }
-  #players .p { padding: 3px 0; display: flex; align-items: center; gap: 6px; }
-  #players .p::before { content: '●'; color: #0f0; }
-  #players .p.me::before { color: #ff0; }
-
   #crosshair {
     position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
     margin: -3px 0 0 -3px; background: #fff; border-radius: 50%;
-    box-shadow: 0 0 6px #fff; opacity: 0.6;
+    box-shadow: 0 0 6px #fff; opacity: 0.5;
   }
 
-  #hint {
-    position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px;
-    font-size: 13px; color: #ccc;
+  #roominfo {
+    position: absolute; top: 15px; left: 15px;
+    background: rgba(0,0,0,0.7); padding: 10px 15px; border-radius: 8px;
+    border: 1px solid #f0a; font-size: 14px; pointer-events: auto;
   }
-  #hint b { color: #0af; }
+  #roominfo .title { color: #f0a; font-weight: bold; margin-bottom: 4px; }
+  #roominfo b { color: #f0a; }
+  #roominfo .code { font-size: 18px; letter-spacing: 3px; color: #ff0; cursor: pointer; }
+
+  #players {
+    position: absolute; top: 120px; left: 15px;
+    background: rgba(0,0,0,0.7); padding: 10px 15px; border-radius: 8px;
+    border: 1px solid #f0a; font-size: 13px; min-width: 180px;
+  }
+  #players .title { color: #f0a; margin-bottom: 6px; font-weight: bold; }
+  #players .p { padding: 3px 0; display: flex; align-items: center; gap: 6px; }
+  #players .p::before { content: '🐱'; font-size: 12px; }
+  #players .p.me::before { content: '⭐'; }
 
   #chatlog {
-    position: absolute; bottom: 60px; left: 15px; width: 380px; max-height: 250px;
+    position: absolute; bottom: 60px; left: 15px; width: 380px; max-height: 260px;
     overflow-y: auto; pointer-events: none; font-size: 14px;
   }
   #chatlog div {
     background: rgba(0,0,0,0.6); padding: 5px 10px; margin-bottom: 3px;
-    border-radius: 4px; border-left: 3px solid #0af;
+    border-radius: 4px; border-left: 3px solid #f0a;
     word-wrap: break-word; animation: fadeIn 0.2s;
   }
   #chatlog .name { color: #ff0; font-weight: bold; margin-right: 6px; }
-  #chatlog .sys { color: #0af; font-style: italic; border-left-color: #0af; }
+  #chatlog .sys { color: #f0a; font-style: italic; border-left-color: #f0a; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
 
   #chatinput {
     position: absolute; bottom: 60px; left: 15px; width: 380px;
-    background: rgba(0,0,0,0.85); border: 2px solid #0af; color: #fff;
+    background: rgba(0,0,0,0.85); border: 2px solid #f0a; color: #fff;
     padding: 10px 15px; font-size: 14px; border-radius: 6px;
     font-family: inherit; outline: none; display: none; pointer-events: auto;
   }
   #chatinput.active { display: block; }
 
+  #emotePanel {
+    position: absolute; bottom: 15px; right: 15px;
+    background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;
+    border: 1px solid #f0a; display: flex; gap: 6px; flex-wrap: wrap;
+    max-width: 260px; pointer-events: auto;
+  }
+  #emotePanel button {
+    background: #f0a; border: none; padding: 6px 10px; border-radius: 4px;
+    color: #000; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 12px;
+  }
+  #emotePanel button:hover { background: #ff44cc; }
+
   #music {
     position: absolute; top: 15px; right: 15px;
     background: rgba(0,0,0,0.7); padding: 10px 15px; border-radius: 8px;
-    border: 1px solid #0af; font-size: 12px; pointer-events: auto;
-    max-width: 220px;
+    border: 1px solid #f0a; font-size: 12px; pointer-events: auto; max-width: 220px;
   }
-  #music .title { color: #0af; margin-bottom: 6px; font-weight: bold; }
-  #music .now { color: #0f0; font-size: 11px; margin-bottom: 6px; }
+  #music .title { color: #f0a; margin-bottom: 6px; font-weight: bold; }
+  #music .now { color: #0f0; font-size: 11px; margin-bottom: 6px; word-break: break-all; }
   #music button {
-    background: #0af; color: #fff; border: none; padding: 5px 10px;
+    background: #f0a; color: #000; border: none; padding: 5px 10px;
     border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px;
-    margin-right: 4px;
+    margin-right: 4px; font-weight: bold;
   }
-  #music button:hover { background: #08c; }
 
-  #screen {
-    position: fixed; inset: 0; z-index: 100;
-    background: radial-gradient(circle at 50% 30%, #1a2a4a, #050510);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 20px;
+  #hint {
+    position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px;
+    font-size: 12px; color: #ccc; white-space: nowrap;
   }
-  #screen.hidden { display: none; }
-  #screen h1 {
-    font-size: 56px; margin-bottom: 10px;
-    background: linear-gradient(90deg, #0af, #0f0);
+  #hint b { color: #f0a; }
+
+  /* ===== Главное меню ===== */
+  #menu {
+    position: fixed; inset: 0; z-index: 100;
+    background: radial-gradient(circle at 50% 30%, #4a1a5a, #100010);
+    overflow-y: auto; padding: 30px 20px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  #menu.hidden { display: none; }
+  #menu h1 {
+    font-size: 64px; margin-bottom: 5px; letter-spacing: 4px;
+    background: linear-gradient(90deg, #f0a, #ff0);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 60px rgba(255,0,170,0.5);
   }
-  #screen .sub { color: #888; margin-bottom: 40px; font-size: 16px; }
-  #screen .panel {
-    background: rgba(255,255,255,0.05); padding: 30px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.1); min-width: 340px;
+  #menu .sub { color: #c8a; margin-bottom: 30px; font-size: 16px; }
+
+  .panel {
+    background: rgba(255,255,255,0.05); padding: 25px; border-radius: 12px;
+    border: 1px solid rgba(255,0,170,0.3); width: 100%; max-width: 480px;
+    margin-bottom: 20px;
   }
-  #screen input {
-    width: 100%; padding: 12px 15px; font-size: 16px;
-    background: rgba(0,0,0,0.4); border: 1px solid #0af; color: #fff;
+  .panel h2 { color: #f0a; font-size: 18px; margin-bottom: 15px; }
+
+  .panel input {
+    width: 100%; padding: 12px 15px; font-size: 15px;
+    background: rgba(0,0,0,0.4); border: 1px solid #f0a; color: #fff;
     border-radius: 6px; outline: none; font-family: inherit;
-    margin-bottom: 15px; text-align: center; letter-spacing: 2px;
+    margin-bottom: 12px;
   }
-  #screen button {
-    width: 100%; padding: 12px; font-size: 16px;
-    background: linear-gradient(90deg, #0af, #0f0); color: #000;
+  .panel input.code {
+    text-transform: uppercase; text-align: center; letter-spacing: 6px;
+    font-weight: bold; font-size: 20px;
+  }
+  .panel button {
+    width: 100%; padding: 12px; font-size: 15px;
+    background: linear-gradient(90deg, #f0a, #ff0); color: #000;
     border: none; border-radius: 6px; cursor: pointer;
-    font-family: inherit; font-weight: bold; margin-bottom: 12px;
+    font-family: inherit; font-weight: bold; margin-bottom: 10px;
     transition: transform 0.1s;
   }
-  #screen button:hover { transform: scale(1.02); }
-  #screen button:disabled { opacity: 0.5; cursor: wait; }
-  #screen .or { color: #666; margin: 12px 0; font-size: 12px; }
-  #screen .status {
-    color: #0af; font-size: 13px; margin-top: 15px; min-height: 20px;
+  .panel button:hover { transform: scale(1.02); }
+  .panel button:disabled { opacity: 0.5; cursor: wait; }
+  .panel button.secondary {
+    background: transparent; color: #f0a; border: 1px solid #f0a;
   }
-  #screen .err { color: #f55; }
+  .panel button.secondary:hover { background: rgba(255,0,170,0.1); }
+
+  .or { color: #666; text-align: center; margin: 10px 0; font-size: 12px; }
+
+  /* Список серверов */
+  #serverList {
+    max-height: 340px; overflow-y: auto;
+    border-radius: 6px;
+  }
+  .server-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 10px; align-items: center;
+    padding: 10px 12px; margin-bottom: 6px;
+    background: rgba(0,0,0,0.4); border-radius: 6px;
+    border-left: 3px solid #f0a;
+    font-size: 13px;
+  }
+  .server-row:hover { background: rgba(255,0,170,0.1); }
+  .server-row .name { font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .server-row .players { color: #0f0; font-size: 12px; }
+  .server-row .ping { font-size: 12px; min-width: 50px; text-align: right; }
+  .server-row .ping.good { color: #0f0; }
+  .server-row .ping.mid { color: #ff0; }
+  .server-row .ping.bad { color: #f55; }
+  .server-row .join {
+    background: #f0a; border: none; padding: 5px 12px; border-radius: 4px;
+    color: #000; font-weight: bold; cursor: pointer; font-family: inherit;
+    font-size: 12px;
+  }
+  .server-row .join:hover { background: #ff44cc; }
+  .empty-list {
+    text-align: center; color: #888; padding: 30px 10px; font-style: italic;
+  }
+
+  .status { color: #f0a; font-size: 13px; margin-top: 10px; min-height: 18px; text-align: center; }
+  .status.err { color: #f55; }
+
+  #createForm { display: none; }
+  #createForm.active { display: block; }
 </style>
 </head>
 <body>
 
 <div id="hud">
-  <div id="topbar">
-    <div id="roominfo" style="display:none;">
-      <div>Комната: <span class="code" id="roomCode">----</span></div>
-      <div style="font-size:11px;color:#888;margin-top:4px;">(клик по коду — скопировать)</div>
-    </div>
-    <div id="players" style="display:none;">
-      <div class="title">Игроки <span id="playerCount">1</span>/10</div>
-      <div id="playerList"></div>
-    </div>
-  </div>
   <div id="crosshair"></div>
-  <div id="hint" style="display:none;">
-    <b>WASD</b> движение · <b>Мышь</b> обзор · <b>Shift</b> бег · <b>Space</b> прыжок · <b>/</b> чат · <b>U</b> музыка
+  <div id="roominfo" style="display:none;">
+    <div class="title">🐱 <span id="roomName">—</span></div>
+    <div>Код: <span class="code" id="roomCode">----</span></div>
+    <div style="font-size:11px;color:#888;margin-top:4px;">(клик по коду — скопировать)</div>
+  </div>
+  <div id="players" style="display:none;">
+    <div class="title">Игроки <span id="playerCount">1</span>/10</div>
+    <div id="playerList"></div>
   </div>
   <div id="chatlog"></div>
   <input id="chatinput" type="text" maxlength="200" placeholder="Сообщение... Enter — отправить, Esc — отмена">
@@ -143,19 +196,47 @@
     <div class="now" id="musicNow">— ничего —</div>
     <button id="musicPick">Загрузить MP3</button>
     <button id="musicStop">Стоп</button>
-    <input type="file" id="musicFile" accept="audio/mpeg,audio/mp3,audio/*" style="display:none;">
+    <input type="file" id="musicFile" accept="audio/*" style="display:none;">
+  </div>
+  <div id="emotePanel" style="display:none;">
+    <button data-emote="sit">🐱 Сидеть (E)</button>
+    <button data-emote="lay">😴 Лежать (Q)</button>
+    <button data-emote="wave">👋 Махать (F)</button>
+    <button data-emote="meow">🔊 Мяу (1)</button>
+    <button data-emote="meow2">🔊 Мяу2 (2)</button>
+    <button data-emote="meow3">🔊 Мурр (3)</button>
+  </div>
+  <div id="hint" style="display:none;">
+    <b>WASD</b> ходьба · <b>Shift</b> бег · <b>Space</b> прыжок · <b>/</b> чат · <b>U</b> музыка · <b>E/Q/F</b> эмоции · <b>1-3</b> мяу
   </div>
 </div>
 
-<div id="screen">
-  <h1>Platform Ride</h1>
-  <div class="sub">онлайн поездка на платформе · до 10 игроков</div>
+<div id="menu">
+  <h1>🐱 Котость Hangout</h1>
+  <div class="sub">сетевая тусовка котов · до 10 в комнате</div>
+
+  <!-- Список серверов -->
   <div class="panel">
-    <input type="text" id="nameInput" placeholder="Твоё имя" maxlength="16" value="">
-    <button id="createBtn">Создать комнату</button>
-    <div class="or">— или —</div>
-    <input type="text" id="joinInput" placeholder="КОД КОМНАТЫ" maxlength="6" style="text-transform:uppercase; letter-spacing:6px;">
-    <button id="joinBtn">Подключиться</button>
+    <h2>🌐 Доступные серверы</h2>
+    <button id="refreshBtn" class="secondary">🔄 Обновить список</button>
+    <div id="serverList">
+      <div class="empty-list">Загрузка...</div>
+    </div>
+  </div>
+
+  <!-- Создание / подключение -->
+  <div class="panel">
+    <h2>🎮 Играть</h2>
+    <input type="text" id="nameInput" placeholder="Твоё имя" maxlength="16">
+    <button id="createBtn">✨ Создать свой сервер</button>
+    <div id="createForm">
+      <input type="text" id="serverNameInput" placeholder="Название сервера" maxlength="30">
+      <button id="createConfirm">🚀 Запустить</button>
+      <button id="createCancel" class="secondary">Отмена</button>
+    </div>
+    <div class="or">— или по коду —</div>
+    <input type="text" id="joinInput" class="code" placeholder="КОД" maxlength="6">
+    <button id="joinBtn">🔗 Подключиться</button>
     <div class="status" id="status"></div>
   </div>
 </div>
@@ -164,167 +245,172 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
   }
 }
 </script>
 <script type="module">
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // ============================================================
-//  НАСТРОЙКИ
+//  КОНСТАНТЫ
 // ============================================================
 const MAX_PLAYERS = 10;
-const PLATFORM_LENGTH = 400;      // длина платформы
-const PLATFORM_WIDTH = 20;        // ширина
-const MOVE_SPEED = 6;
-const RUN_SPEED = 10;
+const MOVE_SPEED = 5;
+const RUN_SPEED = 9;
 const JUMP_VEL = 7;
 const GRAVITY = -20;
-const TICK_RATE = 20;             // сколько раз в секунду шлём позицию
-const CHAT_HISTORY = 50;
+const TICK_RATE = 20;
+const CHAT_HISTORY = 60;
+const LOBBY_ID = 'kotost-hangout-lobby-v1';
+const ROOM_PREFIX = 'kotost-hangout-room-';
+const MODEL_URL = './kot.glb';
 
 // ============================================================
-//  ГЛОБАЛЬНОЕ СОСТОЯНИЕ
+//  СОСТОЯНИЕ
 // ============================================================
 const state = {
   name: '',
   roomCode: '',
+  roomName: '',
   isHost: false,
   peer: null,
-  connections: new Map(), // peerId -> {conn, data: {name, x,y,z,ry}, mesh, label}
+  connections: new Map(),
   myId: null,
+  catModel: null,          // шаблон glb-модели
   player: {
     pos: new THREE.Vector3(0, 1, 0),
     vel: new THREE.Vector3(),
     yaw: 0,
     pitch: 0,
     onGround: true,
-    lastSent: 0
+    lastSent: 0,
+    emote: null,
+    emoteUntil: 0
   },
   keys: {},
   chatActive: false,
-  lastStep: 0
+  lastStep: 0,
+  lobbyConn: null,
+  lobbyPeer: null
 };
 
 // ============================================================
-//  THREE.JS — СЦЕНА, КАМЕРА, РЕНДЕР
+//  ЗВУКИ (Web Audio)
+// ============================================================
+const Sound = {
+  ctx: null,
+  init() {
+    if (this.ctx) return;
+    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  },
+  resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+  meow(pitch = 1) {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(600 * pitch, t);
+    o.frequency.exponentialRampToValueAtTime(900 * pitch, t + 0.1);
+    o.frequency.exponentialRampToValueAtTime(500 * pitch, t + 0.3);
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'bandpass'; f.frequency.value = 1200 * pitch; f.Q.value = 3;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.2, t + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    o.connect(f).connect(g).connect(this.ctx.destination);
+    o.start(t); o.stop(t + 0.4);
+  },
+  purr() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    o.type = 'triangle';
+    o.frequency.value = 25;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.15, t + 0.2);
+    g.gain.setValueAtTime(0.15, t + 0.8);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+    o.connect(g).connect(this.ctx.destination);
+    o.start(t); o.stop(t + 1.3);
+  }
+};
+
+// ============================================================
+//  THREE.JS
 // ============================================================
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87b8e8);
-scene.fog = new THREE.Fog(0x87b8e8, 80, 220);
+scene.fog = new THREE.Fog(0x87b8e8, 60, 180);
 
 const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 500);
 camera.rotation.order = 'YXZ';
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
 document.body.appendChild(renderer.domElement);
 
-// Свет
-scene.add(new THREE.AmbientLight(0xaabbdd, 0.5));
-scene.add(new THREE.HemisphereLight(0x87b8e8, 0x3a4a5a, 0.7));
+scene.add(new THREE.AmbientLight(0xaabbdd, 0.55));
+scene.add(new THREE.HemisphereLight(0x87b8e8, 0x4a5a3a, 0.7));
 
 const sun = new THREE.DirectionalLight(0xfff2cc, 1.3);
-sun.position.set(50, 80, 30);
+sun.position.set(40, 60, 20);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left = -60;
-sun.shadow.camera.right = 60;
-sun.shadow.camera.top = 60;
-sun.shadow.camera.bottom = -60;
-sun.shadow.camera.far = 200;
-sun.shadow.bias = -0.0005;
+sun.shadow.camera.left = -60; sun.shadow.camera.right = 60;
+sun.shadow.camera.top = 60; sun.shadow.camera.bottom = -60;
+sun.shadow.camera.far = 150;
 scene.add(sun);
 
 // ============================================================
-//  ТЕКСТУРЫ (процедурные UHD-ish)
+//  ТЕКСТУРЫ
 // ============================================================
-function makeNoiseTexture(baseColor, opts = {}) {
-  const {
-    noise = 25, size = 512,
-    pattern = null, repeat = [1,1],
-    lines = 0, dots = 0
-  } = opts;
+function makeTex(base, { noise=25, size=256, pattern=null, repeat=[1,1] } = {}) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = baseColor;
-  ctx.fillRect(0, 0, size, size);
-
-  const img = ctx.getImageData(0, 0, size, size);
-  for (let i = 0; i < img.data.length; i += 4) {
-    const n = (Math.random() - 0.5) * noise;
-    img.data[i]   = Math.max(0, Math.min(255, img.data[i]   + n));
-    img.data[i+1] = Math.max(0, Math.min(255, img.data[i+1] + n));
-    img.data[i+2] = Math.max(0, Math.min(255, img.data[i+2] + n));
+  ctx.fillStyle = base; ctx.fillRect(0,0,size,size);
+  const img = ctx.getImageData(0,0,size,size);
+  for (let i=0; i<img.data.length; i+=4) {
+    const n = (Math.random()-0.5)*noise;
+    img.data[i] = Math.max(0,Math.min(255,img.data[i]+n));
+    img.data[i+1] = Math.max(0,Math.min(255,img.data[i+1]+n));
+    img.data[i+2] = Math.max(0,Math.min(255,img.data[i+2]+n));
   }
-  ctx.putImageData(img, 0, 0);
-
-  if (pattern === 'metal') {
-    // Вертикальные блики
-    for (let i = 0; i < 60; i++) {
-      ctx.strokeStyle = `rgba(255,255,255,${Math.random()*0.08})`;
-      ctx.lineWidth = Math.random() * 3;
-      ctx.beginPath();
-      const y = Math.random() * size;
-      ctx.moveTo(0, y);
-      ctx.lineTo(size, y + (Math.random()-0.5)*20);
-      ctx.stroke();
-    }
-    // Заглушки/болты
-    for (let i = 0; i < 30; i++) {
+  ctx.putImageData(img,0,0);
+  if (pattern === 'grass') {
+    for (let i = 0; i < 400; i++) {
+      ctx.strokeStyle = `rgba(${40+Math.random()*40},${100+Math.random()*80},${30+Math.random()*30},0.4)`;
+      ctx.lineWidth = 1;
       const x = Math.random()*size, y = Math.random()*size;
-      const r = 2 + Math.random()*3;
-      const grad = ctx.createRadialGradient(x-r/2, y-r/2, 0, x, y, r);
-      grad.addColorStop(0, 'rgba(255,255,255,0.4)');
-      grad.addColorStop(1, 'rgba(0,0,0,0.3)');
-      ctx.fillStyle = grad;
-      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
-    }
-  } else if (pattern === 'rail') {
-    // Периодические полосы (шпалы)
-    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-    ctx.lineWidth = 6;
-    for (let i = 0; i < size; i += 40) {
-      ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(size, i); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + (Math.random()-0.5)*4, y - 3 - Math.random()*4); ctx.stroke();
     }
   } else if (pattern === 'wood') {
-    for (let i = 0; i < 30; i++) {
-      ctx.strokeStyle = `rgba(60,30,10,${0.1 + Math.random()*0.3})`;
+    for (let i = 0; i < 20; i++) {
+      ctx.strokeStyle = `rgba(60,30,10,${0.15+Math.random()*0.25})`;
       ctx.lineWidth = 1 + Math.random()*2;
       ctx.beginPath();
-      const y = Math.random() * size;
+      const y = Math.random()*size;
       ctx.moveTo(0, y);
-      ctx.bezierCurveTo(size/3, y + (Math.random()-0.5)*30, 2*size/3, y + (Math.random()-0.5)*30, size, y);
+      ctx.bezierCurveTo(size/3, y+(Math.random()-0.5)*20, 2*size/3, y+(Math.random()-0.5)*20, size, y);
       ctx.stroke();
     }
-  }
-
-  if (lines > 0) {
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-    ctx.lineWidth = 1;
-    const step = size / lines;
-    for (let i = 0; i <= lines; i++) {
-      ctx.beginPath(); ctx.moveTo(i*step, 0); ctx.lineTo(i*step, size); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, i*step); ctx.lineTo(size, i*step); ctx.stroke();
+  } else if (pattern === 'brick') {
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 2;
+    const bw = size/4, bh = size/8;
+    for (let y = 0; y < size; y += bh) {
+      const off = (y/bh)%2 ? bw/2 : 0;
+      for (let x = -bw; x < size+bw; x += bw) ctx.strokeRect(x+off, y, bw, bh);
     }
   }
-
-  if (dots > 0) {
-    for (let i = 0; i < dots; i++) {
-      ctx.fillStyle = `rgba(0,0,0,${0.1 + Math.random()*0.4})`;
-      ctx.beginPath();
-      ctx.arc(Math.random()*size, Math.random()*size, 1+Math.random()*3, 0, Math.PI*2);
-      ctx.fill();
-    }
-  }
-
   const tex = new THREE.CanvasTexture(c);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.repeat.set(repeat[0], repeat[1]);
@@ -333,928 +419,223 @@ function makeNoiseTexture(baseColor, opts = {}) {
   return tex;
 }
 
-const metalTex   = makeNoiseTexture('#7a8a9a', { noise: 20, pattern: 'metal', repeat: [1, 40] });
-const railTex    = makeNoiseTexture('#4a4a52', { noise: 15, pattern: 'rail',  repeat: [1, 60] });
-const woodTex    = makeNoiseTexture('#8a5a30', { noise: 30, pattern: 'wood',  repeat: [2, 2] });
-const darkMetal  = makeNoiseTexture('#3a3a44', { noise: 18, pattern: 'metal', repeat: [4, 4] });
-const sandTex    = makeNoiseTexture('#c2a878', { noise: 35, repeat: [40, 40] });
-const concrete   = makeNoiseTexture('#9a9a9a', { noise: 25, repeat: [4, 4], dots: 200 });
+const grassTex = makeTex('#4a7a3a', { pattern: 'grass', noise: 30, repeat: [25, 25] });
+const woodTex  = makeTex('#8a5a30', { pattern: 'wood', noise: 25, repeat: [2, 2] });
+const brickTex = makeTex('#a05040', { pattern: 'brick', noise: 20, repeat: [2, 2] });
+const roofTex  = makeTex('#6a3a1a', { pattern: 'wood', noise: 30, repeat: [3, 3] });
+const stoneTex = makeTex('#888888', { noise: 25, repeat: [2, 2] });
 
-const metalMat    = new THREE.MeshStandardMaterial({ map: metalTex,  roughness: 0.55, metalness: 0.7 });
-const railMat     = new THREE.MeshStandardMaterial({ map: railTex,   roughness: 0.6,  metalness: 0.5 });
-const woodMat     = new THREE.MeshStandardMaterial({ map: woodTex,   roughness: 0.8 });
-const darkMat     = new THREE.MeshStandardMaterial({ map: darkMetal, roughness: 0.5,  metalness: 0.6 });
-const sandMat     = new THREE.MeshStandardMaterial({ map: sandTex,   roughness: 0.95 });
-const concreteMat = new THREE.MeshStandardMaterial({ map: concrete,  roughness: 0.9 });
+const grassMat = new THREE.MeshStandardMaterial({ map: grassTex, roughness: 0.95 });
+const woodMat  = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.8 });
+const brickMat = new THREE.MeshStandardMaterial({ map: brickTex, roughness: 0.9 });
+const roofMat  = new THREE.MeshStandardMaterial({ map: roofTex, roughness: 0.9 });
+const stoneMat = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9 });
 
 // ============================================================
-//  МИР: ПЛАТФОРМА, КОЛОНКА, ОКРУЖЕНИЕ
+//  МИР
 // ============================================================
 const world = new THREE.Group();
 scene.add(world);
 
-// Небо (градиент через сферу)
-const skyGeo = new THREE.SphereGeometry(400, 32, 16);
-const skyMat = new THREE.ShaderMaterial({
-  side: THREE.BackSide,
-  uniforms: {
-    top: { value: new THREE.Color(0x3a7bd5) },
-    bottom: { value: new THREE.Color(0xd4e5f7) },
-    offset: { value: 20 },
-    exponent: { value: 0.7 }
-  },
-  vertexShader: `
-    varying vec3 vWorldPos;
-    void main() {
-      vec4 wp = modelMatrix * vec4(position, 1.0);
-      vWorldPos = wp.xyz;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }`,
-  fragmentShader: `
-    uniform vec3 top; uniform vec3 bottom;
-    uniform float offset; uniform float exponent;
-    varying vec3 vWorldPos;
-    void main() {
-      float h = normalize(vWorldPos + vec3(0.0, offset, 0.0)).y;
-      gl_FragColor = vec4(mix(bottom, top, max(pow(max(h,0.0), exponent), 0.0)), 1.0);
-    }`
-});
-scene.add(new THREE.Mesh(skyGeo, skyMat));
+const collidables = [];
 
-// --- Земля внизу (для эффекта высоты) ---
-const groundGeo = new THREE.PlaneGeometry(2000, 2000);
-const ground = new THREE.Mesh(groundGeo, sandMat);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -40;
+function addBox(x, y, z, w, h, d, mat, opts = {}) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  world.add(m);
+  if (opts.collide !== false) {
+    collidables.push({
+      min: new THREE.Vector3(x-w/2, y-h/2, z-d/2),
+      max: new THREE.Vector3(x+w/2, y+h/2, z+d/2)
+    });
+  }
+  return m;
+}
+
+// Земля
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), grassMat);
+ground.rotation.x = -Math.PI/2;
 ground.receiveShadow = true;
-scene.add(ground);
+world.add(ground);
 
-// --- ОСНОВНАЯ ПЛАТФОРМА (по которой едем) ---
-const platform = new THREE.Group();
-world.add(platform);
-
-// Настил платформы
-const deck = new THREE.Mesh(
-  new THREE.BoxGeometry(PLATFORM_WIDTH, 0.6, PLATFORM_LENGTH),
-  metalMat
-);
-deck.position.y = -0.3;
-deck.receiveShadow = true;
-deck.castShadow = true;
-platform.add(deck);
-
-// Бортовые рейки (по бокам)
-for (const sx of [-1, 1]) {
-  const rail = new THREE.Mesh(
-    new THREE.BoxGeometry(0.4, 1.2, PLATFORM_LENGTH),
-    railMat
-  );
-  rail.position.set(sx * (PLATFORM_WIDTH/2 - 0.2), 0.6, 0);
-  rail.castShadow = true;
-  rail.receiveShadow = true;
-  platform.add(rail);
+// Забор по периметру (декоративный, но с коллизией)
+for (let i = -50; i <= 50; i += 5) {
+  addBox(i, 0.6, -50, 0.3, 1.2, 0.3, woodMat);
+  addBox(i, 0.6,  50, 0.3, 1.2, 0.3, woodMat);
+  addBox(-50, 0.6, i, 0.3, 1.2, 0.3, woodMat);
+  addBox( 50, 0.6, i, 0.3, 1.2, 0.3, woodMat);
 }
 
-// Перила-стойки
-for (let z = -PLATFORM_LENGTH/2 + 2; z < PLATFORM_LENGTH/2; z += 4) {
-  for (const sx of [-1, 1]) {
-    const post = new THREE.Mesh(
-      new THREE.BoxGeometry(0.15, 2, 0.15),
-      darkMat
-    );
-    post.position.set(sx * (PLATFORM_WIDTH/2 - 0.2), 1.6, z);
-    post.castShadow = true;
-    platform.add(post);
-  }
-  // Верхняя перекладина
-  for (const sx of [-1, 1]) {
-    const bar = new THREE.Mesh(
-      new THREE.BoxGeometry(0.1, 0.1, 3.8),
-      darkMat
-    );
-    bar.position.set(sx * (PLATFORM_WIDTH/2 - 0.2), 2.5, z + 2);
-    platform.add(bar);
+// Домики
+function buildHouse(cx, cz, w = 6, d = 6, h = 4) {
+  addBox(cx, h/2, cz - d/2, w, h, 0.4, brickMat);
+  addBox(cx, h/2, cz + d/2, w, h, 0.4, brickMat);
+  addBox(cx - w/2, h/2, cz, 0.4, h, d, brickMat);
+  addBox(cx + w/2, h/2, cz, 0.4, h, d, brickMat);
+  addBox(cx, h + 0.8, cz, w+1, 1.6, d+1, roofMat);
+  // Внутренний пол
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(w-0.8, 0.1, d-0.8), woodMat);
+  floor.position.set(cx, 0.05, cz);
+  floor.receiveShadow = true;
+  world.add(floor);
+}
+buildHouse(-25, -20);
+buildHouse( 25, -20);
+buildHouse( 25,  20);
+buildHouse(-25,  20);
+
+// Деревья
+function buildTree(x, z) {
+  const trunk = addBox(x, 1, z, 0.5, 2, 0.5, woodMat);
+  const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2a5a2a, roughness: 1 });
+  for (let i = 0; i < 3; i++) {
+    const s = 2 - i * 0.4;
+    const leaves = new THREE.Mesh(new THREE.SphereGeometry(s, 8, 6), leavesMat);
+    leaves.position.set(x, 2.5 + i * 1.3, z);
+    leaves.castShadow = true;
+    world.add(leaves);
   }
 }
+for (let i = 0; i < 20; i++) {
+  const a = (i / 20) * Math.PI * 2;
+  const r = 38 + Math.random() * 6;
+  buildTree(Math.cos(a)*r, Math.sin(a)*r);
+}
+buildTree(-10, -35); buildTree(10, -35);
+buildTree(-10, 35);  buildTree(10, 35);
 
-// Полоска-разметка по центру
-const stripe = new THREE.Mesh(
-  new THREE.BoxGeometry(0.3, 0.05, PLATFORM_LENGTH),
-  new THREE.MeshStandardMaterial({ color: 0xffcc00, emissive: 0x553300, roughness: 0.5 })
-);
-stripe.position.set(0, 0.02, 0);
-platform.add(stripe);
+// Костёр в центре
+const fireGroup = new THREE.Group();
+fireGroup.position.set(0, 0, 0);
+world.add(fireGroup);
 
-// --- КОЛОНКА В КОНЦЕ ПЛАТФОРМЫ ---
-const column = new THREE.Group();
-column.position.set(0, 0, PLATFORM_LENGTH / 2 + 3);
-world.add(column);
-
-// Основание
-const base = new THREE.Mesh(
-  new THREE.CylinderGeometry(3, 3.5, 2, 24),
-  concreteMat
-);
-base.position.y = -40 + 1;
-base.receiveShadow = true;
-base.castShadow = true;
-scene.add(base);
-
-// Сама колонна (высокая)
-const colBody = new THREE.Mesh(
-  new THREE.CylinderGeometry(2.2, 2.5, 60, 32, 1),
-  concreteMat
-);
-colBody.position.y = 0;
-colBody.castShadow = true;
-colBody.receiveShadow = true;
-column.add(colBody);
-
-// Кольца на колонке
-for (let y = -25; y <= 25; y += 8) {
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(2.35, 0.15, 8, 32),
-    metalMat
+// камни вокруг
+for (let i = 0; i < 8; i++) {
+  const a = (i/8) * Math.PI * 2;
+  const rock = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(0.4 + Math.random()*0.2),
+    stoneMat
   );
-  ring.rotation.x = Math.PI/2;
-  ring.position.y = y;
-  column.add(ring);
+  rock.position.set(Math.cos(a)*1.2, 0.2, Math.sin(a)*1.2);
+  rock.castShadow = true;
+  fireGroup.add(rock);
 }
-
-// Верхушка
-const cap = new THREE.Mesh(
-  new THREE.ConeGeometry(3, 5, 24),
-  metalMat
-);
-cap.position.y = 32;
-column.add(cap);
-
-// Мигающий огонь на верхушке
-const beaconMat = new THREE.MeshStandardMaterial({ color: 0xff2200, emissive: 0xff2200, emissiveIntensity: 1 });
-const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), beaconMat);
-beacon.position.y = 35;
-column.add(beacon);
-const beaconLight = new THREE.PointLight(0xff3300, 3, 40);
-beaconLight.position.y = 35;
-column.add(beaconLight);
-
-// --- РЕЛЬСЫ (уходят вдаль) ---
-const railGroup = new THREE.Group();
-world.add(railGroup);
-
-// 4 рельса по углам (по 2 с каждой стороны)
-for (const sx of [-1, 1]) {
-  for (const sz of [-1, 1]) {
-    const rail = new THREE.Mesh(
-      new THREE.BoxGeometry(0.3, 0.3, PLATFORM_LENGTH * 4),
-      railMat
-    );
-    rail.position.set(
-      sx * (PLATFORM_WIDTH/2 - 0.5),
-      -1.2,
-      sz * PLATFORM_LENGTH * 2
-    );
-    rail.castShadow = true;
-    railGroup.add(rail);
-  }
+// Поленья
+for (let i = 0; i < 4; i++) {
+  const a = (i/4) * Math.PI * 2;
+  const log = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.2, 8), woodMat);
+  log.rotation.z = Math.PI/2;
+  log.rotation.y = a;
+  log.position.set(0, 0.2, 0);
+  fireGroup.add(log);
 }
+// Огонь
+const fireLight = new THREE.PointLight(0xff6622, 2, 15);
+fireLight.position.y = 1.5;
+fireGroup.add(fireLight);
 
-// Шпалы под рельсами
-for (let z = -PLATFORM_LENGTH * 3; z < PLATFORM_LENGTH * 3; z += 3) {
-  const tie = new THREE.Mesh(
-    new THREE.BoxGeometry(PLATFORM_WIDTH + 1, 0.2, 0.6),
-    woodMat
-  );
-  tie.position.set(0, -1.5, z);
-  tie.castShadow = true;
-  railGroup.add(tie);
-}
+const flameMat = new THREE.MeshBasicMaterial({ color: 0xffaa22, transparent: true, opacity: 0.8 });
+const flame = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.4, 8), flameMat);
+flame.position.y = 0.9;
+fireGroup.add(flame);
 
-// --- ОБЛАКА (для красоты) ---
-const clouds = new THREE.Group();
-for (let i = 0; i < 30; i++) {
+// Скамейки
+function buildBench(x, z, rot = 0) {
   const g = new THREE.Group();
-  const count = 3 + Math.floor(Math.random() * 4);
-  for (let j = 0; j < count; j++) {
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 0.6), woodMat);
+  seat.position.y = 0.6; seat.castShadow = true;
+  g.add(seat);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(3, 0.8, 0.15), woodMat);
+  back.position.set(0, 1.0, -0.25); back.castShadow = true;
+  g.add(back);
+  for (const dx of [-1.3, 1.3]) {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.6, 0.6), woodMat);
+    leg.position.set(dx, 0.3, 0);
+    g.add(leg);
+  }
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  world.add(g);
+}
+buildBench(-8, -8, Math.PI/4);
+buildBench( 8, -8, -Math.PI/4);
+buildBench(-8,  8, Math.PI - Math.PI/4);
+buildBench( 8,  8, Math.PI + Math.PI/4);
+
+// Облака
+const cloudsGroup = new THREE.Group();
+for (let i = 0; i < 20; i++) {
+  const g = new THREE.Group();
+  const n = 3 + Math.floor(Math.random()*3);
+  for (let j = 0; j < n; j++) {
     const puff = new THREE.Mesh(
-      new THREE.SphereGeometry(4 + Math.random() * 4, 8, 6),
-      new THREE.MeshStandardMaterial({
-        color: 0xffffff, roughness: 1, transparent: true, opacity: 0.85
-      })
+      new THREE.SphereGeometry(3 + Math.random()*3, 8, 6),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, transparent: true, opacity: 0.9 })
     );
-    puff.position.set(
-      (Math.random() - 0.5) * 8,
-      (Math.random() - 0.5) * 3,
-      (Math.random() - 0.5) * 8
-    );
+    puff.position.set((Math.random()-0.5)*6, (Math.random()-0.5)*2, (Math.random()-0.5)*6);
     g.add(puff);
   }
-  g.position.set(
-    (Math.random() - 0.5) * 400,
-    40 + Math.random() * 40,
-    (Math.random() - 0.5) * 800
-  );
-  clouds.add(g);
+  g.position.set((Math.random()-0.5)*180, 30 + Math.random()*15, (Math.random()-0.5)*180);
+  cloudsGroup.add(g);
 }
-scene.add(clouds);
-
-// --- СОЛНЦЕ (визуальный диск) ---
-const sunDisc = new THREE.Mesh(
-  new THREE.SphereGeometry(8, 16, 16),
-  new THREE.MeshBasicMaterial({ color: 0xffff88 })
-);
-sunDisc.position.set(150, 180, -250);
-scene.add(sunDisc);
+scene.add(cloudsGroup);
 
 // ============================================================
-//  ИГРОК (локальный)
+//  ЗАГРУЗКА МОДЕЛИ КОТА (kot.glb)
 // ============================================================
-const myGroup = new THREE.Group();
-
-const myBodyMat = new THREE.MeshStandardMaterial({ color: 0xffcc44, roughness: 0.7 });
-const myBody = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1.0, 6, 12), myBodyMat);
-myBody.position.y = 0.9;
-myBody.castShadow = true;
-myGroup.add(myBody);
-
-const myHead = new THREE.Mesh(
-  new THREE.SphereGeometry(0.32, 16, 16),
-  new THREE.MeshStandardMaterial({ color: 0xffddbb, roughness: 0.6 })
-);
-myHead.position.y = 1.85;
-myHead.castShadow = true;
-myGroup.add(myHead);
-
-// Визор (типа лицо)
-const visor = new THREE.Mesh(
-  new THREE.BoxGeometry(0.5, 0.15, 0.05),
-  new THREE.MeshStandardMaterial({ color: 0x0af, emissive: 0x0880ff, emissiveIntensity: 0.5 })
-);
-visor.position.set(0, 1.9, -0.3);
-myGroup.add(visor);
-
-scene.add(myGroup);
-
-// ============================================================
-//  УТИЛИТЫ
-// ============================================================
-function makeNameSprite(text, color = '#ffcc44') {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 64;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(0, 0, 256, 64);
-  ctx.font = 'bold 32px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = color;
-  ctx.fillText(text, 128, 32);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
-  const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(2.5, 0.6, 1);
-  sprite.position.y = 2.7;
-  return sprite;
-}
-
-function makeRemotePlayer(name, color) {
+function fallbackCat() {
+  // На случай если kot.glb не найден — простая капсула
   const g = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({ color, roughness: 0.7 });
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1.0, 6, 12), bodyMat);
+  const body = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.4, 0.9, 6, 12),
+    new THREE.MeshStandardMaterial({ color: 0xcc8844, roughness: 0.8 })
+  );
   body.position.y = 0.9;
   body.castShadow = true;
   g.add(body);
-
   const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.32, 16, 16),
-    new THREE.MeshStandardMaterial({ color: 0xffddbb, roughness: 0.6 })
+    new THREE.SphereGeometry(0.35, 12, 12),
+    new THREE.MeshStandardMaterial({ color: 0xcc8844, roughness: 0.8 })
   );
-  head.position.y = 1.85;
+  head.position.y = 1.75;
   head.castShadow = true;
   g.add(head);
-
-  const visor = new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.15, 0.05),
-    new THREE.MeshStandardMaterial({ color: 0x0f0, emissive: 0x00ff00, emissiveIntensity: 0.5 })
-  );
-  visor.position.set(0, 1.9, -0.3);
-  g.add(visor);
-
-  const label = makeNameSprite(name, '#0f0');
-  g.add(label);
-
-  g.userData.label = label;
+  // уши
+  for (const dx of [-0.18, 0.18]) {
+    const ear = new THREE.Mesh(
+      new THREE.ConeGeometry(0.12, 0.25, 4),
+      new THREE.MeshStandardMaterial({ color: 0xcc8844 })
+    );
+    ear.position.set(dx, 2.05, 0);
+    g.add(ear);
+  }
   return g;
 }
 
-const PLAYER_COLORS = [
-  0xff4444, 0x44ff44, 0x4444ff, 0xffff44, 0xff44ff,
-  0x44ffff, 0xff8844, 0x88ff44, 0x4488ff, 0xff4488
-];
-
-// ============================================================
-//  UI
-// ============================================================
-const $ = id => document.getElementById(id);
-const screenEl = $('screen');
-const statusEl = $('status');
-const nameInput = $('nameInput');
-const joinInput = $('joinInput');
-const createBtn = $('createBtn');
-const joinBtn = $('joinBtn');
-
-// Случайное имя по умолчанию
-nameInput.value = 'Игрок' + (100 + Math.floor(Math.random() * 900));
-
-function setStatus(text, isError = false) {
-  statusEl.textContent = text;
-  statusEl.classList.toggle('err', isError);
-}
-
-// ============================================================
-//  КОМНАТЫ И СЕТЬ (PeerJS)
-// ============================================================
-function genRoomCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s = '';
-  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return s;
-}
-
-// Хост: создаём Peer с ID = префикс + код комнаты
-function createRoom() {
-  state.name = nameInput.value.trim().slice(0, 16) || 'Host';
-  state.isHost = true;
-  state.roomCode = genRoomCode();
-
-  setStatus('Создаём комнату...');
-  createBtn.disabled = true;
-
-  // ID хоста: platform-ride-CODE
-  const peerId = 'platform-ride-' + state.roomCode;
-  const peer = new Peer(peerId, {
-    debug: 1,
-    config: {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-      ]
-    }
-  });
-
-  peer.on('open', (id) => {
-    state.peer = peer;
-    state.myId = id;
-    onConnected('host');
-  });
-
-  peer.on('connection', (conn) => {
-    if (state.connections.size >= MAX_PLAYERS - 1) {
-      conn.on('open', () => {
-        conn.send({ type: 'kick', reason: 'Комната заполнена (макс 10)' });
-        setTimeout(() => conn.close(), 500);
-      });
-      return;
-    }
-    setupConnection(conn, true);
-  });
-
-  peer.on('error', (err) => {
-    console.error(err);
-    if (err.type === 'unavailable-id') {
-      // ID занят — генерируем новый
-      state.roomCode = genRoomCode();
-      peer.destroy();
-      createRoom();
-    } else {
-      setStatus('Ошибка: ' + err.type, true);
-      createBtn.disabled = false;
-    }
-  });
-}
-
-// Клиент: подключаемся к хосту по коду
-function joinRoom() {
-  state.name = nameInput.value.trim().slice(0, 16) || 'Игрок';
-  state.isHost = false;
-  const code = joinInput.value.trim().toUpperCase();
-
-  if (code.length !== 6) {
-    setStatus('Код должен быть 6 символов', true);
-    return;
-  }
-  state.roomCode = code;
-
-  setStatus('Подключаемся...');
-  joinBtn.disabled = true;
-
-  const peer = new Peer({
-    debug: 1,
-    config: {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-      ]
-    }
-  });
-
-  peer.on('open', (id) => {
-    state.peer = peer;
-    state.myId = id;
-    const conn = peer.connect('platform-ride-' + code, { reliable: true });
-    setupConnection(conn, false);
-
-    // Таймаут подключения
-    const timeout = setTimeout(() => {
-      if (!conn.open) {
-        setStatus('Не удалось подключиться. Комната не найдена?', true);
-        joinBtn.disabled = false;
-        peer.destroy();
-      }
-    }, 12000);
-
-    conn.on('open', () => clearTimeout(timeout));
-  });
-
-  peer.on('error', (err) => {
-    console.error(err);
-    setStatus('Ошибка: ' + err.type, true);
-    joinBtn.disabled = false;
-  });
-}
-
-// Общая настройка соединения
-function setupConnection(conn, isIncoming) {
-  conn.on('open', () => {
-    state.connections.set(conn.peer, { conn, data: null, mesh: null });
-
-    // Отправляем своё имя
-    conn.send({ type: 'hello', name: state.name });
-
-    // Если хост — рассылаем всем остальным информацию о новом игроке
-    if (state.isHost) {
-      // Отправляем новому список всех
-      const list = [{ id: state.myId, name: state.name }];
-      for (const [pid, c] of state.connections) {
-        if (c.data) list.push({ id: pid, name: c.data.name });
-      }
-      conn.send({ type: 'players', list });
-      // Всем остальным сообщаем
-      for (const [pid, c] of state.connections) {
-        if (pid !== conn.peer) {
-          c.conn.send({ type: 'player-joined', id: conn.peer });
-        }
-      }
-    }
-
-    if (!isIncoming) {
-      onConnected('client');
-    }
-    // Хост мог ещё не открыть UI (если открыл соединение раньше)
-    if (state.isHost) onConnected('host');
-
-    updatePlayerList();
-    addChat('sys', `Подключился игрок`);
-  });
-
-  conn.on('data', (data) => handleData(conn.peer, data));
-
-  conn.on('close', () => {
-    const c = state.connections.get(conn.peer);
-    if (c && c.mesh) scene.remove(c.mesh);
-    state.connections.delete(conn.peer);
-
-    // Хост уведомляет остальных
-    if (state.isHost) {
-      for (const [pid, cc] of state.connections) {
-        cc.conn.send({ type: 'player-left', id: conn.peer });
-      }
-    }
-    updatePlayerList();
-    addChat('sys', 'Игрок отключился');
-  });
-
-  conn.on('error', (e) => console.warn('Conn error', e));
-}
-
-// Обработка входящих данных
-function handleData(fromId, data) {
-  if (!data || typeof data !== 'object') return;
-  const c = state.connections.get(fromId);
-
-  switch (data.type) {
-    case 'hello':
-      if (c) {
-        c.data = c.data || {};
-        c.data.name = data.name || 'Игрок';
-      }
-      updatePlayerList();
-      addChat('sys', `${data.name} присоединился`);
-      break;
-
-    case 'players':
-      // Хост прислал список
-      for (const p of data.list) {
-        if (p.id === state.myId) continue;
-        const existing = state.connections.get(p.id);
-        if (existing) {
-          existing.data = existing.data || {};
-          existing.data.name = p.name;
-        } else {
-          // Нужно подключиться? Нет, хост сам всех соединит через mesh — упрощаем: только хост-клиент звезда.
-        }
-      }
-      updatePlayerList();
-      break;
-
-    case 'player-joined':
-      // Не обрабатываем — мы и так видим
-      break;
-
-    case 'player-left':
-      if (c && c.mesh) scene.remove(c.mesh);
-      state.connections.delete(fromId);
-      updatePlayerList();
-      break;
-
-    case 'pos':
-      if (c) {
-        c.data = c.data || {};
-        c.data.x = data.x; c.data.y = data.y; c.data.z = data.z;
-        c.data.ry = data.ry;
-        c.data.name = c.data.name || data.name || 'Игрок';
-
-        // Создаём меш если нет
-        if (!c.mesh) {
-          const color = PLAYER_COLORS[state.connections.size % PLAYER_COLORS.length];
-          c.mesh = makeRemotePlayer(c.data.name, color);
-          scene.add(c.mesh);
-        }
-        c.mesh.position.set(data.x, data.y - 1.7, data.z);
-        c.mesh.rotation.y = data.ry;
-      }
-      break;
-
-    case 'chat':
-      addChat(data.name || '???', data.text, false);
-      // Хост ретранслирует
-      if (state.isHost) {
-        for (const [pid, cc] of state.connections) {
-          if (pid !== fromId) cc.conn.send(data);
-        }
-      }
-      break;
-
-    case 'kick':
-      alert('Вас исключили: ' + (data.reason || ''));
-      location.reload();
-      break;
-  }
-}
-
-// Загрузка после подключения
-function onConnected(role) {
-  screenEl.classList.add('hidden');
-  $('roominfo').style.display = 'block';
-  $('players').style.display = 'block';
-  $('music').style.display = 'block';
-  $('hint').style.display = 'block';
-  $('roomCode').textContent = state.roomCode;
-
-  addChat('sys', `Ты ${role === 'host' ? 'хост' : 'подключился'}. Комната ${state.roomCode}`);
-  addChat('sys', `Жми / для чата, U для музыки`);
-
-  updatePlayerList();
-  renderer.domElement.requestPointerLock();
-}
-
-// Копирование кода
-$('roomCode').addEventListener('click', () => {
-  navigator.clipboard.writeText(state.roomCode).then(() => {
-    addChat('sys', 'Код скопирован: ' + state.roomCode);
-  });
-});
-
-// Список игроков
-function updatePlayerList() {
-  const list = $('playerList');
-  list.innerHTML = '';
-
-  // Себя
-  const meDiv = document.createElement('div');
-  meDiv.className = 'p me';
-  meDiv.textContent = state.name + ' (ты)' + (state.isHost ? ' 👑' : '');
-  list.appendChild(meDiv);
-
-  for (const [pid, c] of state.connections) {
-    const d = document.createElement('div');
-    d.className = 'p';
-    d.textContent = (c.data && c.data.name) || 'Подключение...';
-    list.appendChild(d);
-  }
-
-  $('playerCount').textContent = state.connections.size + 1;
-}
-
-// ============================================================
-//  ЧАТ
-// ============================================================
-const chatlog = $('chatlog');
-const chatInput = $('chatinput');
-
-function addChat(name, text, isSystem = true) {
-  const d = document.createElement('div');
-  if (isSystem || name === 'sys') {
-    d.className = 'sys';
-    d.textContent = text;
-  } else {
-    d.innerHTML = `<span class="name">${escapeHtml(name)}:</span>${escapeHtml(text)}`;
-  }
-  chatlog.appendChild(d);
-  chatlog.scrollTop = chatlog.scrollHeight;
-
-  while (chatlog.children.length > CHAT_HISTORY) {
-    chatlog.removeChild(chatlog.firstChild);
-  }
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
-    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
-  }[c]));
-}
-
-function openChat() {
-  if (state.chatActive) return;
-  state.chatActive = true;
-  chatInput.classList.add('active');
-  chatInput.value = '';
-  chatInput.focus();
-  document.exitPointerLock();
-}
-
-function closeChat(send = false) {
-  if (!state.chatActive) return;
-  state.chatActive = false;
-  chatInput.classList.remove('active');
-
-  if (send) {
-    const text = chatInput.value.trim();
-    if (text) sendChat(text);
-  }
-  chatInput.value = '';
-  // Вернуть управление
-  renderer.domElement.requestPointerLock();
-}
-
-function sendChat(text) {
-  const payload = { type: 'chat', name: state.name, text };
-  addChat(state.name, text, false);
-  for (const [pid, c] of state.connections) {
-    try { c.conn.send(payload); } catch(e) {}
-  }
-}
-
-// ============================================================
-//  МУЗЫКА
-// ============================================================
-let musicAudio = null;
-
-$('musicPick').addEventListener('click', () => $('musicFile').click());
-$('musicStop').addEventListener('click', () => {
-  if (musicAudio) { musicAudio.pause(); musicAudio = null; $('musicNow').textContent = '— ничего —'; }
-});
-
-$('musicFile').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (musicAudio) musicAudio.pause();
-  musicAudio = new Audio(URL.createObjectURL(file));
-  musicAudio.volume = 0.5;
-  musicAudio.play();
-  $('musicNow').textContent = '🎵 ' + file.name;
-  addChat('sys', `Играет: ${file.name}`);
-  musicAudio.onended = () => {
-    $('musicNow').textContent = '— тишина —';
-  };
-  e.target.value = '';
-});
-
-// ============================================================
-//  ВВОД
-// ============================================================
-document.addEventListener('keydown', (e) => {
-  // Чат
-  if (state.chatActive) {
-    if (e.key === 'Enter') { e.preventDefault(); closeChat(true); }
-    else if (e.key === 'Escape') { e.preventDefault(); closeChat(false); }
-    return;
-  }
-
-  // Открытие чата — / или . (русская раскладка — точка там где /)
-  if (e.key === '/' || e.key === '.' || e.key === 'ж' || e.key === 'Ж') {
-    e.preventDefault();
-    openChat();
-    return;
-  }
-
-  // Музыка — U
-  if (e.key === 'u' || e.key === 'U' || e.key === 'г' || e.key === 'Г') {
-    $('musicFile').click();
-    return;
-  }
-
-  state.keys[e.code] = true;
-});
-
-document.addEventListener('keyup', (e) => {
-  state.keys[e.code] = false;
-});
-
-document.addEventListener('mousemove', (e) => {
-  if (state.chatActive) return;
-  if (document.pointerLockElement !== renderer.domElement) return;
-  state.player.yaw -= e.movementX * 0.002;
-  state.player.pitch -= e.movementY * 0.002;
-  state.player.pitch = Math.max(-Math.PI/2 + 0.05, Math.min(Math.PI/2 - 0.05, state.player.pitch));
-});
-
-document.addEventListener('click', () => {
-  if (!state.chatActive && screenEl.classList.contains('hidden')) {
-    if (document.pointerLockElement !== renderer.domElement) {
-      renderer.domElement.requestPointerLock();
-    }
-  }
-});
-
-// ============================================================
-//  ДВИЖЕНИЕ ЛОКАЛЬНОГО ИГРОКА
-// ============================================================
-const PLAYER_RADIUS = 0.5;
-
-function updatePlayer(dt) {
-  const p = state.player;
-
-  // Ориентация
-  camera.rotation.y = p.yaw;
-  camera.rotation.x = p.pitch;
-
-  // Горизонтальное движение
-  const speed = (state.keys['ShiftLeft'] || state.keys['ShiftRight']) ? RUN_SPEED : MOVE_SPEED;
-  const forward = new THREE.Vector3(-Math.sin(p.yaw), 0, -Math.cos(p.yaw));
-  const right = new THREE.Vector3(Math.cos(p.yaw), 0, -Math.sin(p.yaw));
-
-  const dir = new THREE.Vector3();
-  if (state.keys['KeyW']) dir.add(forward);
-  if (state.keys['KeyS']) dir.sub(forward);
-  if (state.keys['KeyD']) dir.add(right);
-  if (state.keys['KeyA']) dir.sub(right);
-
-  const moving = dir.lengthSq() > 0;
-  if (moving) {
-    dir.normalize().multiplyScalar(speed * dt);
-    const nx = p.pos.x + dir.x;
-    const nz = p.pos.z + dir.z;
-
-    // Границы платформы
-    const maxX = PLATFORM_WIDTH / 2 - PLAYER_RADIUS;
-    p.pos.x = Math.max(-maxX, Math.min(maxX, nx));
-
-    // Движение по длине платформы (без ограничения, чтобы можно было выйти к колонне/дальше)
-    // Но чтобы не убегать бесконечно — ограничим небольшой областью
-    p.pos.z = Math.max(-PLATFORM_LENGTH / 2 - 20, Math.min(PLATFORM_LENGTH * 3, nz));
-
-    // Шаги
-    const now = performance.now();
-    if (now - state.lastStep > (speed > 8 ? 300 : 450)) {
-      state.lastStep = now;
-    }
-  }
-
-  // Гравитация
-  p.vel.y += GRAVITY * dt;
-
-  if (state.keys['Space'] && p.onGround) {
-    p.vel.y = JUMP_VEL;
-    p.onGround = false;
-  }
-
-  p.pos.y += p.vel.y * dt;
-
-  // Простой пол — уровень платформы
-  let floorY = 1.7;
-  // Если мы над платформой — стоим на ней
-  const onPlatform = Math.abs(p.pos.x) <= PLATFORM_WIDTH/2 &&
-                    Math.abs(p.pos.z) <= PLATFORM_LENGTH/2;
-  if (onPlatform) floorY = 1.7;
-  // Иначе падаем вниз (можно убить — но не будем)
-  else floorY = 1.7; // оставим магический пол для простоты
-
-  if (p.pos.y <= floorY) {
-    p.pos.y = floorY;
-    p.vel.y = 0;
-    p.onGround = true;
-  }
-
-  // Камера
-  camera.position.copy(p.pos);
-
-  // Меш игрока (виден только для отладки, обычно скрыт)
-  myGroup.position.set(p.pos.x, p.pos.y - 1.7, p.pos.z);
-  myGroup.rotation.y = p.yaw;
-  myGroup.visible = false; // своё тело не видим
-
-  // Отправка позиции
-  const now = performance.now();
-  if (now - p.lastSent > 1000 / TICK_RATE) {
-    p.lastSent = now;
-    sendPosition();
-  }
-}
-
-function sendPosition() {
-  if (!state.peer) return;
-  const p = state.player;
-  const payload = {
-    type: 'pos',
-    x: p.pos.x, y: p.pos.y, z: p.pos.z,
-    ry: p.yaw,
-    name: state.name
-  };
-  for (const [pid, c] of state.connections) {
-    try { c.conn.send(payload); } catch(e) {}
-  }
-}
-
-// ============================================================
-//  АНИМАЦИЯ
-// ============================================================
-const clock = new THREE.Clock();
-
-function animate() {
-  requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
-  const t = performance.now() * 0.001;
-
-  if (screenEl.classList.contains('hidden')) {
-    if (!state.chatActive) updatePlayer(dt);
-  }
-
-  // Анимации мира
-  // Вращение облаков и колыхание
-  clouds.children.forEach((c, i) => {
-    c.position.x += Math.sin(t * 0.1 + i) * 0.01;
-  });
-
-  // Мигание огня на колонне
-  beaconMat.emissiveIntensity = 0.6 + Math.sin(t * 4) * 0.4;
-  beaconLight.intensity = 2 + Math.sin(t * 4) * 1.5;
-
-  // Вращение солнца (легкое)
-  sunDisc.rotation.y += dt * 0.05;
-
-  // Анимация удалённых игроков — плавное сглаживание
-  for (const [pid, c] of state.connections) {
-    if (c.mesh && c.data) {
-      const target = new THREE.Vector3(c.data.x, c.data.y - 1.7, c.data.z);
-      c.mesh.position.lerp(target, Math.min(1, dt * 15));
-      // Поворот
-      let dy = c.data.ry - c.mesh.rotation.y;
-      while (dy > Math.PI) dy -= Math.PI * 2;
-      while (dy < -Math.PI) dy += Math.PI * 2;
-      c.mesh.rotation.y += dy * Math.min(1, dt * 15);
-    }
-  }
-
-  renderer.render(scene, camera);
-}
-animate();
-
-// ============================================================
-//  РЕСАЙЗ
-// ============================================================
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
-
-// ============================================================
-//  КНОПКИ СТАРТА
-// ============================================================
-createBtn.addEventListener('click', createRoom);
-joinBtn.addEventListener('click', joinRoom);
-joinInput.addEventListener('input', (e) => {
-  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-});
-joinInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') joinRoom();
-});
-nameInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') createRoom();
-});
-</script>
-</body>
-</html>
+// Загружаем модель через GLTFLoader
+const loader = new GLTFLoader();
+let modelReady = false;
+
+function normalizeModel(model) {
+  // Масштабируем модель чтобы была ~1.8 м высотой
+  const bbox = new THREE.Box3().setFromObject(model);
+  const size = bbox.getSize(new THREE.Vector3());
+  const targetH = 1.8;
+  const scale = targetH / size.y;
+  model.scale.setScalar(scale);
+
+  // Центрируем по XZ, ставим на y=0
+  const bbox2 = new THREE.Box3().setFromObject(model);
+  const center = bbox2.getCenter(new THREE.Vector3());
+  model.position.x -= center.x;
+  model.position.z -= center.z;
+  model.position.y -= bbox2.min.y;
+
+  // Тени
+  model.traverse(o => {
+    if (o.isMesh) {
+      o.castShadow = true;
+      o.receiveShadow = true;
+      if (o.material) o.material.side = THREE.FrontSide;
+   
