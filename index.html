@@ -3,484 +3,615 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MoonMilk — Разработчик</title>
+<title>ipcnei — чат</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
-:root{
-  --bg:#070a12;--bg2:#0c101c;--bg3:#111827;
-  --surface:rgba(255,255,255,.04);
+/* ── THEMES ── */
+:root[data-theme="dark"]{
+  --bg:#0a0a0f;
+  --bg2:#12121a;
+  --bg3:#1a1a24;
+  --surface:rgba(255,255,255,.03);
   --border:rgba(255,255,255,.08);
-  --teal:#00e5b0;--violet:#6d5fff;--gold:#ffd54a;
-  --text:#eef2ff;--muted:#8b9bb4;--muted2:#5a6a82;
-  --max:1100px;
-  --ease:cubic-bezier(.22,.8,.22,1)
+  --text:#f0f0f5;
+  --muted:#8b8b9e;
+  --accent:#00e5ff;
+  --accent2:#b14aff;
+  --msg-own:#00e5ff;
+  --msg-own-text:#0a0a0f;
+  --msg-other:#1a1a24;
+  --msg-other-text:#f0f0f5;
+  --glow:0 0 20px rgba(0,229,255,.5);
 }
+:root[data-theme="light"]{
+  --bg:#f5f5f8;
+  --bg2:#ffffff;
+  --bg3:#ebebf0;
+  --surface:rgba(0,0,0,.03);
+  --border:rgba(0,0,0,.08);
+  --text:#0a0a0f;
+  --muted:#666677;
+  --accent:#0099cc;
+  --accent2:#7a2ee6;
+  --msg-own:#0099cc;
+  --msg-own-text:#ffffff;
+  --msg-other:#ebebf0;
+  --msg-other-text:#0a0a0f;
+  --glow:0 0 20px rgba(0,153,204,.4);
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+html,body{height:100%}
 body{
-  font-family:'Outfit',system-ui,-apple-system,sans-serif;
-  background:var(--bg);color:var(--text);line-height:1.6;
-  overflow-x:hidden
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:background .3s,color .3s;
+  overflow:hidden;
 }
-a{color:inherit;text-decoration:none}
-.container{width:min(100% - 32px,var(--max));margin-inline:auto}
+input,button,textarea{font-family:inherit}
 
-/* ── BACKGROUND GLOW ── */
-.bg-glow{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-.bg-glow::before{
-  content:"";position:absolute;
-  width:600px;height:600px;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,229,176,.15),transparent 70%);
-  top:-200px;left:-200px;filter:blur(40px)
-}
-.bg-glow::after{
-  content:"";position:absolute;
-  width:700px;height:700px;border-radius:50%;
-  background:radial-gradient(circle,rgba(109,95,255,.15),transparent 70%);
-  bottom:-300px;right:-200px;filter:blur(40px)
-}
-
-/* ── NAV ── */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  background:rgba(7,10,18,.7);
-  border-bottom:1px solid var(--border)
-}
-.nav-inner{
-  height:64px;display:flex;align-items:center;justify-content:space-between
-}
-.logo{
-  font-weight:900;font-size:1.2rem;letter-spacing:-.03em;
-  display:flex;align-items:center;gap:10px
-}
-.logo-orb{
-  width:34px;height:34px;border-radius:10px;
-  background:linear-gradient(135deg,var(--teal),var(--violet));
-  display:grid;place-items:center;font-size:.8rem;font-weight:900;color:#fff;
-  box-shadow:0 0 22px rgba(0,229,176,.4)
-}
-.logo em{font-style:normal;color:var(--teal)}
-.nav-links{display:flex;gap:8px;align-items:center}
-.nav-links a{
-  padding:7px 14px;border-radius:8px;
-  font-size:.88rem;font-weight:500;color:var(--muted);
-  transition:.18s var(--ease)
-}
-.nav-links a:hover{color:var(--text);background:var(--surface)}
-@media(max-width:600px){.nav-links{display:none}}
-
-/* ── HERO ── */
-.hero{
-  min-height:100vh;display:flex;align-items:center;
-  padding:100px 0 60px;position:relative
-}
-.hero-inner{max-width:800px}
-.eyebrow{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:6px 14px;border-radius:999px;
-  background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);
-  font-size:.78rem;font-weight:600;color:var(--teal);
-  margin-bottom:24px
-}
-.eyebrow-dot{
-  width:7px;height:7px;border-radius:50%;background:var(--teal);
-  box-shadow:0 0 10px var(--teal);
-  animation:pulse 2s infinite
-}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-h1{
-  font-size:clamp(2.8rem,7vw,5.5rem);
-  font-weight:900;line-height:1.02;letter-spacing:-.04em;
-  color:#fff;margin-bottom:20px
-}
-h1 .grad{
-  background:linear-gradient(135deg,var(--teal),var(--violet));
-  -webkit-background-clip:text;background-clip:text;color:transparent
-}
-.hero-sub{
-  font-size:clamp(1rem,1.6vw,1.2rem);
-  color:var(--muted);max-width:560px;margin-bottom:32px
-}
-.hero-sub b{color:var(--text);font-weight:600}
-
-.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:36px}
-.btn{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:13px 26px;border-radius:999px;font-weight:700;
-  font-size:.95rem;cursor:pointer;border:none;font-family:inherit;
-  transition:.2s var(--ease);text-decoration:none
-}
-.btn:hover{transform:translateY(-2px)}
-.btn-primary{
-  background:linear-gradient(135deg,var(--teal),var(--violet));
-  color:#fff;box-shadow:0 12px 32px rgba(0,229,176,.3)
-}
-.btn-primary:hover{box-shadow:0 18px 48px rgba(0,229,176,.45)}
-.btn-ghost{
-  background:var(--surface);color:var(--muted);
-  border:1px solid var(--border)
-}
-.btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
-
-/* ── SECTIONS ── */
-section{padding:80px 0}
-.section-label{
-  display:inline-flex;padding:5px 12px;border-radius:999px;
-  background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);
-  font-size:.75rem;font-weight:700;color:var(--teal);
-  margin-bottom:14px;letter-spacing:.05em;text-transform:uppercase
-}
-h2{
-  font-size:clamp(1.8rem,3.5vw,2.8rem);
-  font-weight:800;letter-spacing:-.03em;color:#fff;
-  line-height:1.1;margin-bottom:14px
-}
-.section-desc{color:var(--muted);max-width:600px;margin-bottom:40px}
-
-/* ── ABOUT ── */
-.about-grid{
-  display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center
-}
-@media(max-width:800px){.about-grid{grid-template-columns:1fr}}
-.about-text p{color:var(--muted);margin-bottom:16px;font-size:1rem}
-.about-text p b{color:var(--text);font-weight:600}
-.about-card{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:20px;padding:28px;position:relative;overflow:hidden
-}
-.about-card::before{
-  content:"";position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--teal),transparent)
-}
-.about-avatar{
-  width:80px;height:80px;border-radius:20px;
-  background:linear-gradient(135deg,var(--teal),var(--violet));
+/* ── AUTH SCREEN ── */
+.auth-screen{
+  position:fixed;inset:0;
   display:grid;place-items:center;
-  font-size:2rem;font-weight:900;color:#fff;margin-bottom:18px;
-  box-shadow:0 0 30px rgba(0,229,176,.4)
+  padding:20px;
+  background:radial-gradient(circle at 20% 20%,rgba(0,229,255,.08),transparent 50%),
+             radial-gradient(circle at 80% 80%,rgba(177,74,255,.08),transparent 50%),
+             var(--bg);
+  z-index:100;
 }
-.about-name{font-size:1.4rem;font-weight:800;color:#fff;margin-bottom:6px}
-.about-role{color:var(--teal);font-weight:600;font-size:.9rem;margin-bottom:16px}
-.about-tags{display:flex;flex-wrap:wrap;gap:8px}
-.tag{
-  padding:5px 12px;border-radius:999px;
-  background:var(--surface);border:1px solid var(--border);
-  font-size:.78rem;font-weight:600;color:var(--muted)
+.auth-card{
+  width:100%;max-width:400px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:36px 32px;
+  box-shadow:0 30px 80px rgba(0,0,0,.4), var(--glow);
+}
+.auth-logo{
+  font-size:2rem;font-weight:900;
+  text-align:center;margin-bottom:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  letter-spacing:-.03em;
+}
+.auth-sub{
+  text-align:center;color:var(--muted);
+  font-size:.85rem;margin-bottom:28px;
+}
+.auth-tabs{
+  display:flex;gap:4px;margin-bottom:24px;
+  background:var(--bg3);padding:4px;border-radius:12px;
+}
+.auth-tab{
+  flex:1;padding:10px;border:none;background:transparent;
+  color:var(--muted);font-weight:600;font-size:.85rem;
+  border-radius:8px;cursor:pointer;transition:.2s;
+}
+.auth-tab.active{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;box-shadow:var(--glow);
+}
+.auth-form{display:none}
+.auth-form.active{display:block}
+.auth-form label{
+  display:block;font-size:.78rem;color:var(--muted);
+  margin-bottom:6px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.auth-form input{
+  width:100%;padding:12px 14px;
+  border-radius:10px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--text);
+  font-size:.95rem;margin-bottom:14px;
+  transition:.2s;
+}
+.auth-form input:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,229,255,.15);
+}
+.auth-form button[type=submit]{
+  width:100%;padding:13px;
+  border:none;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-weight:700;font-size:.95rem;
+  cursor:pointer;transition:.2s;
+  box-shadow:var(--glow);
+  margin-top:8px;
+}
+.auth-form button[type=submit]:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(0,229,255,.5);
+}
+.auth-form button[type=submit]:disabled{
+  opacity:.5;cursor:not-allowed;transform:none;
+}
+.auth-switch{
+  text-align:center;margin-top:20px;
+  font-size:.85rem;color:var(--muted);
+}
+.auth-switch a{
+  color:var(--accent);font-weight:600;
+  text-decoration:none;cursor:pointer;
+}
+.auth-switch a:hover{text-decoration:underline}
+.auth-error{
+  background:rgba(255,60,60,.1);
+  border:1px solid rgba(255,60,60,.3);
+  color:#ff8080;
+  padding:10px;border-radius:8px;
+  font-size:.85rem;margin-bottom:14px;
+  text-align:center;display:none;
+}
+.auth-error.show{display:block}
+.g-recaptcha{margin-bottom:14px;transform:scale(.9);transform-origin:0 0}
+
+/* ── CHAT SCREEN ── */
+.chat-screen{
+  display:none;height:100vh;
+  flex-direction:column;
+}
+.chat-screen.active{display:flex}
+
+.chat-header{
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.chat-logo{
+  font-size:1.2rem;font-weight:900;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.chat-user{
+  display:flex;align-items:center;gap:10px;
+  font-size:.85rem;color:var(--muted);
+}
+.chat-user b{color:var(--text);font-weight:700}
+.btn-logout{
+  padding:6px 14px;border:1px solid var(--border);
+  background:var(--surface);color:var(--muted);
+  border-radius:8px;font-size:.78rem;font-weight:600;
+  cursor:pointer;transition:.2s;
+}
+.btn-logout:hover{
+  border-color:var(--accent);color:var(--accent);
 }
 
-/* ── SKILLS ── */
-.skills-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:16px
+.chat-messages{
+  flex:1;overflow-y:auto;
+  padding:20px;
+  display:flex;flex-direction:column;gap:14px;
+  background:radial-gradient(circle at 50% 0%,rgba(0,229,255,.03),transparent 50%),
+             var(--bg);
 }
-.skill-card{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:16px;padding:24px;transition:.2s var(--ease)
+.chat-messages::-webkit-scrollbar{width:8px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{
+  background:var(--border);border-radius:4px;
 }
-.skill-card:hover{
-  border-color:rgba(0,229,176,.3);transform:translateY(-3px)
-}
-.skill-icon{
-  width:46px;height:46px;border-radius:12px;
-  background:rgba(0,229,176,.1);border:1px solid rgba(0,229,176,.2);
-  display:grid;place-items:center;margin-bottom:16px;
-  font-size:1.4rem
-}
-.skill-card h3{font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:8px}
-.skill-card p{font-size:.85rem;color:var(--muted);line-height:1.5}
+.chat-messages::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 
-/* ── PROJECTS ── */
-.projects-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:20px
+.msg{
+  display:flex;gap:10px;max-width:75%;
+  animation:msgIn .3s ease;
 }
-.project-card{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:20px;padding:28px;transition:.25s var(--ease);
-  text-decoration:none;color:inherit;display:block;
-  position:relative;overflow:hidden
+@keyframes msgIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
 }
-.project-card:hover{
-  border-color:rgba(0,229,176,.4);transform:translateY(-4px);
-  box-shadow:0 24px 60px rgba(0,0,0,.5)
+.msg.own{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{
+  width:36px;height:36px;border-radius:50%;
+  flex-shrink:0;
+  display:grid;place-items:center;
+  font-weight:800;font-size:.85rem;color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
 }
-.project-card::after{
-  content:"";position:absolute;top:0;right:0;
-  width:200px;height:200px;
-  background:radial-gradient(circle,rgba(0,229,176,.08),transparent 70%);
-  pointer-events:none
+.msg-bubble{
+  padding:10px 14px;border-radius:16px;
+  background:var(--msg-other);
+  color:var(--msg-other-text);
+  font-size:.92rem;line-height:1.5;
+  word-wrap:break-word;position:relative;
 }
-.project-icon{
-  width:52px;height:52px;border-radius:14px;
-  background:linear-gradient(135deg,var(--teal),var(--violet));
-  display:grid;place-items:center;margin-bottom:18px;
-  font-size:1.5rem;color:#fff;
-  box-shadow:0 0 24px rgba(0,229,176,.3)
+.msg.own .msg-bubble{
+  background:var(--msg-own);
+  color:var(--msg-own-text);
+  box-shadow:var(--glow);
 }
-.project-card h3{
-  font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:8px;
-  letter-spacing:-.02em
+.msg-meta{
+  display:flex;gap:8px;font-size:.7rem;
+  color:var(--muted);margin-bottom:4px;
+  font-weight:600;
 }
-.project-card p{font-size:.9rem;color:var(--muted);margin-bottom:18px}
-.project-link{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:.85rem;color:var(--teal);font-weight:600
-}
-.project-link svg{transition:.2s}
-.project-card:hover .project-link svg{transform:translateX(4px)}
+.msg.own .msg-meta{color:rgba(10,10,15,.7);justify-content:flex-end}
 
-/* ── CONTACT ── */
-.contact-band{
-  background:radial-gradient(ellipse at 50% 0%,rgba(0,229,176,.1),transparent 60%),var(--bg2);
-  border:1px solid rgba(0,229,176,.2);
-  border-radius:24px;padding:60px 40px;text-align:center;
-  position:relative;overflow:hidden
+.chat-input-wrap{
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  padding:14px 20px;
+  display:flex;gap:10px;
+  position:relative;
 }
-.contact-band::before{
-  content:"";position:absolute;inset:14px;
-  border:1px solid rgba(255,255,255,.04);
-  border-radius:16px;pointer-events:none
+.chat-input{
+  flex:1;padding:12px 16px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--bg3);
+  color:var(--text);
+  font-size:.95rem;
+  resize:none;
+  min-height:44px;max-height:120px;
+  transition:.2s;
 }
-.contact-band h2{font-size:clamp(1.8rem,4vw,3rem);margin-bottom:14px}
-.contact-band p{color:var(--muted);max-width:500px;margin:0 auto 32px}
-.contact-links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
-.contact-link{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:12px 22px;border-radius:999px;
-  background:var(--surface);border:1px solid var(--border);
-  font-weight:600;font-size:.9rem;color:var(--text);
-  transition:.2s var(--ease)
+.chat-input:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,229,255,.15);
 }
-.contact-link:hover{
-  border-color:var(--teal);color:var(--teal);
-  transform:translateY(-2px)
+.chat-send{
+  padding:0 22px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-weight:700;font-size:.9rem;
+  cursor:pointer;transition:.2s;
+  box-shadow:var(--glow);
 }
+.chat-send:hover{transform:translateY(-2px)}
+.chat-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
 
-/* ── FOOTER ── */
-footer{
-  padding:40px 0;border-top:1px solid var(--border);
-  text-align:center;color:var(--muted2);font-size:.85rem
+/* ── THEME TOGGLE ── */
+.theme-toggle{
+  position:fixed;left:20px;bottom:20px;
+  width:52px;height:52px;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:var(--bg2);
+  color:var(--text);
+  font-size:1.3rem;
+  cursor:pointer;
+  display:grid;place-items:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.3), var(--glow);
+  transition:.3s;
+  z-index:1000;
 }
-footer .heart{color:var(--teal)}
-
-/* ── REVEAL ── */
-.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.reveal.show{opacity:1;transform:translateY(0)}
+.theme-toggle:hover{transform:scale(1.1) rotate(15deg)}
+.theme-toggle:active{transform:scale(.95)}
 </style>
 </head>
-<body>
+<body data-theme="dark">
 
-<div class="bg-glow"></div>
+<!-- ═══════════ AUTH SCREEN ═══════════ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">ipcnei</div>
+    <div class="auth-sub">приватный чат</div>
 
-<!-- NAV -->
-<nav>
-  <div class="container nav-inner">
-    <a href="#" class="logo">
-      <div class="logo-orb">M</div>
-      Moon<em>Milk</em>
-    </a>
-    <div class="nav-links">
-      <a href="#about">Обо мне</a>
-      <a href="#skills">Навыки</a>
-      <a href="#projects">Проекты</a>
-      <a href="#contact">Связаться</a>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Вход</button>
+      <button class="auth-tab" data-tab="register">Регистрация</button>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <!-- LOGIN -->
+    <form class="auth-form active" id="loginForm">
+      <label>Ник</label>
+      <input type="text" id="loginUser" required autocomplete="username">
+      <label>Пароль</label>
+      <input type="password" id="loginPass" required autocomplete="current-password">
+      <div class="g-recaptcha" data-sitekey="6LfsQb8tAAAAAHpYMvlv5Txe1SES0uuRQZXw_3tM"></div>
+      <button type="submit" id="loginBtn">Войти</button>
+      <div class="auth-switch">
+        Нет аккаунта? <a onclick="switchTab('register')">Зарегистрироваться</a>
+      </div>
+    </form>
+
+    <!-- REGISTER -->
+    <form class="auth-form" id="registerForm">
+      <label>Ник</label>
+      <input type="text" id="regUser" required pattern="[a-zA-Z0-9_]{3,20}" autocomplete="username">
+      <label>Пароль</label>
+      <input type="password" id="regPass" required minlength="6" autocomplete="new-password">
+      <label>Повтори пароль</label>
+      <input type="password" id="regPass2" required minlength="6" autocomplete="new-password">
+      <div class="g-recaptcha" data-sitekey="6LfsQb8tAAAAAHpYMvlv5Txe1SES0uuRQZXw_3tM"></div>
+      <button type="submit" id="registerBtn">Зарегистрироваться</button>
+      <div class="auth-switch">
+        Уже есть аккаунт? <a onclick="switchTab('login')">Войти</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════ CHAT SCREEN ═══════════ -->
+<div class="chat-screen" id="chatScreen">
+  <div class="chat-header">
+    <div class="chat-logo">ipcnei</div>
+    <div class="chat-user">
+      <span>Ты: <b id="currentUser">—</b></span>
+      <button class="btn-logout" onclick="logout()">Выйти</button>
     </div>
   </div>
-</nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-inner">
-      <div class="eyebrow">
-        <span class="eyebrow-dot"></span>
-        Доступен для проектов
-      </div>
-      <h1>
-        Привет, я <span class="grad">MoonMilk</span>
-      </h1>
-      <p class="hero-sub">
-        <b>Разработчик</b>, который любит создавать проекты, 
-        копаться в <b>Docker</b>, <b>Linux</b> и строить <b>свои панели управления</b>.
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#projects">
-          Смотреть проекты
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
-        <a class="btn btn-ghost" href="#contact">Связаться</a>
-      </div>
-    </div>
+  <div class="chat-messages" id="messages"></div>
+
+  <div class="chat-input-wrap">
+    <textarea class="chat-input" id="msgInput" placeholder="Напиши сообщение..." rows="1"></textarea>
+    <button class="chat-send" id="sendBtn">Отправить</button>
   </div>
-</section>
+</div>
 
-<!-- ABOUT -->
-<section id="about">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-label">Обо мне</div>
-      <h2>Кто я такой</h2>
-      <p class="section-desc">Немного о себе и о том, чем занимаюсь</p>
-    </div>
-
-    <div class="about-grid reveal">
-      <div class="about-text">
-        <p>
-          Я <b>MoonMilk</b> — разработчик, увлечённый технологиями, 
-          автоматизацией и созданием удобных инструментов.
-        </p>
-        <p>
-          Люблю <b>Docker</b>, <b>Linux</b>, <b>веб-разработку</b> и всё, 
-          что связано с серверами. Создаю свои проекты: от простых лендингов 
-          до полноценных панелей управления.
-        </p>
-        <p>
-          Всегда открыт к новым идеям, коллаборациям и интересным задачам.
-        </p>
-      </div>
-
-      <div class="about-card">
-        <div class="about-avatar">M</div>
-        <div class="about-name">MoonMilk</div>
-        <div class="about-role">Разработчик</div>
-        <div class="about-tags">
-          <span class="tag">🌐 Web</span>
-          <span class="tag">🐳 Docker</span>
-          <span class="tag">🐧 Linux</span>
-          <span class="tag">⚙️ DevOps</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SKILLS -->
-<section id="skills">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-label">Навыки</div>
-      <h2>Что я умею</h2>
-      <p class="section-desc">Технологии и инструменты, с которыми работаю</p>
-    </div>
-
-    <div class="skills-grid">
-      <div class="skill-card reveal">
-        <div class="skill-icon">🌐</div>
-        <h3>Веб-разработка</h3>
-        <p>HTML, CSS, JavaScript. Создаю адаптивные и современные сайты</p>
-      </div>
-      <div class="skill-card reveal">
-        <div class="skill-icon">🐳</div>
-        <h3>Docker</h3>
-        <p>Контейнеризация, образы, управление сервисами через docker-compose</p>
-      </div>
-      <div class="skill-card reveal">
-        <div class="skill-icon">🐧</div>
-        <h3>Linux</h3>
-        <p>Настройка серверов, работа с терминалом, bash-скрипты</p>
-      </div>
-      <div class="skill-card reveal">
-        <div class="skill-icon">⚙️</div>
-        <h3>Backend</h3>
-        <p>PHP, Python. Создание API и серверной логики для проектов</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PROJECTS -->
-<section id="projects">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-label">Проекты</div>
-      <h2>Что я создал</h2>
-      <p class="section-desc">Мои проекты и эксперименты</p>
-    </div>
-
-    <div class="projects-grid">
-      <a class="project-card reveal" href="#">
-        <div class="project-icon">K</div>
-        <h3>KDOR</h3>
-        <p>Панель управления мини-серверами на Docker в стиле Pterodactyl. Создание контейнеров, файловый менеджер, терминал.</p>
-        <span class="project-link">
-          Подробнее
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </span>
-      </a>
-
-      <a class="project-card reveal" href="#">
-        <div class="project-icon">K</div>
-        <h3>KdorKVM</h3>
-        <p>Ubuntu в браузере через Docker и VNC. Запуск полноценного Linux-рабочего стола прямо в веб-интерфейсе.</p>
-        <span class="project-link">
-          Подробнее
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </span>
-      </a>
-
-      <a class="project-card reveal" href="#">
-        <div class="project-icon">📦</div>
-        <h3>FileHost</h3>
-        <p>Хостинг файлов с возможностью загрузки, шаринга ссылок и удаления. До 1 ГБ хранилища на пользователя.</p>
-        <span class="project-link">
-          Подробнее
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact">
-  <div class="container">
-    <div class="contact-band reveal">
-      <h2>Давай свяжемся</h2>
-      <p>Открыт к новым проектам, идеям и сотрудничеству. Пиши в любую из соцсетей!</p>
-      <div class="contact-links">
-        <a class="contact-link" href="#" target="_blank">
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-          Telegram
-        </a>
-        <a class="contact-link" href="#" target="_blank">
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
-          GitHub
-        </a>
-        <a class="contact-link" href="#" target="_blank">
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
-          Discord
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="container">
-    © 2026 MoonMilk. Сделано с <span class="heart">♥</span>
-  </div>
-</footer>
+<!-- THEME TOGGLE -->
+<button class="theme-toggle" id="themeToggle" title="Сменить тему">🌙</button>
 
 <script>
-// Reveal on scroll
-var reveals = document.querySelectorAll('.reveal');
-if ('IntersectionObserver' in window) {
-  var io = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if (e.isIntersecting) {
-        e.target.classList.add('show');
-        io.unobserve(e.target);
-      }
-    });
-  }, {threshold: .15});
-  reveals.forEach(function(r){ io.observe(r); });
-} else {
-  reveals.forEach(function(r){ r.classList.add('show'); });
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+var API = '/api';
+var currentUser = null;
+var lastMsgCount = 0;
+
+// ═══════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════
+var themeToggle = document.getElementById('themeToggle');
+var savedTheme = localStorage.getItem('ipcnei_theme') || 'dark';
+document.body.setAttribute('data-theme', savedTheme);
+themeToggle.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+
+themeToggle.addEventListener('click', function(){
+  var cur = document.body.getAttribute('data-theme');
+  var next = cur === 'dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', next);
+  localStorage.setItem('ipcnei_theme', next);
+  themeToggle.textContent = next === 'dark' ? '🌙' : '☀️';
+});
+
+// ═══════════════════════════════════════════
+// TAB SWITCH
+// ═══════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.auth-tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+  document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+  hideError();
 }
+
+document.querySelectorAll('.auth-tab').forEach(function(t){
+  t.addEventListener('click', function(){ switchTab(this.dataset.tab); });
+});
+
+// ═══════════════════════════════════════════
+// ERROR
+// ═══════════════════════════════════════════
+function showError(msg){
+  var e = document.getElementById('authError');
+  e.textContent = msg;
+  e.classList.add('show');
+}
+function hideError(){
+  document.getElementById('authError').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+// RECAPTCHA
+// ═══════════════════════════════════════════
+function getRecaptcha(){
+  // Виджет 1 (login) или виджет 2 (register)
+  if (typeof grecaptcha === 'undefined') return null;
+  var activeForm = document.querySelector('.auth-form.active');
+  var widget = activeForm.querySelector('.g-recaptcha');
+  if (!widget) return null;
+  var widgetId = widget.getAttribute('data-widget-id');
+  if (widgetId === null) return null;
+  return grecaptcha.getResponse(parseInt(widgetId));
+}
+
+// Автоинициализация reCAPTCHA на обоих формах
+window.onloadRecaptcha = function(){
+  document.querySelectorAll('.g-recaptcha').forEach(function(el, i){
+    var id = grecaptcha.render(el, {
+      sitekey: el.getAttribute('data-sitekey'),
+    });
+    el.setAttribute('data-widget-id', id);
+  });
+};
+
+// ═══════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════
+document.getElementById('loginForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  hideError();
+
+  var username = document.getElementById('loginUser').value.trim();
+  var password = document.getElementById('loginPass').value;
+  var recaptcha = getRecaptcha();
+
+  if (!recaptcha) { showError('Пройди капчу'); return; }
+
+  var btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Вход...';
+
+  try {
+    var res = await fetch(API + '/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ username, password, recaptcha }),
+    });
+    var data = await res.json();
+
+    if (!res.ok) {
+      showError(data.error || 'Ошибка входа');
+      btn.disabled = false; btn.textContent = 'Войти';
+      if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+      return;
+    }
+
+    enterChat(data.user);
+  } catch (err) {
+    showError('Ошибка сети: ' + err.message);
+    btn.disabled = false; btn.textContent = 'Войти';
+  }
+});
+
+// ═══════════════════════════════════════════
+// REGISTER
+// ═══════════════════════════════════════════
+document.getElementById('registerForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  hideError();
+
+  var username = document.getElementById('regUser').value.trim();
+  var password = document.getElementById('regPass').value;
+  var password2 = document.getElementById('regPass2').value;
+  var recaptcha = getRecaptcha();
+
+  if (password !== password2) { showError('Пароли не совпадают'); return; }
+  if (!recaptcha) { showError('Пройди капчу'); return; }
+
+  var btn = document.getElementById('registerBtn');
+  btn.disabled = true; btn.textContent = 'Регистрация...';
+
+  try {
+    var res = await fetch(API + '/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ username, password, recaptcha }),
+    });
+    var data = await res.json();
+
+    if (!res.ok) {
+      showError(data.error || 'Ошибка регистрации');
+      btn.disabled = false; btn.textContent = 'Зарегистрироваться';
+      if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+      return;
+    }
+
+    enterChat(data.user);
+  } catch (err) {
+    showError('Ошибка сети: ' + err.message);
+    btn.disabled = false; btn.textContent = 'Зарегистрироваться';
+  }
+});
+
+// ═══════════════════════════════════════════
+// ENTER CHAT
+// ═══════════════════════════════════════════
+function enterChat(user){
+  currentUser = user;
+  localStorage.setItem('ipcnei_user', JSON.stringify(user));
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('chatScreen').classList.add('active');
+  document.getElementById('currentUser').textContent = user.username;
+  loadMessages();
+  setInterval(loadMessages, 3000);
+}
+
+function logout(){
+  localStorage.removeItem('ipcnei_user');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════
+// LOAD MESSAGES
+// ═══════════════════════════════════════════
+async function loadMessages(){
+  try {
+    var res = await fetch(API + '/messages');
+    var msgs = await res.json();
+    if (!Array.isArray(msgs)) return;
+    renderMessages(msgs);
+  } catch (e) {}
+}
+
+function renderMessages(msgs){
+  var box = document.getElementById('messages');
+  var wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 100;
+
+  if (msgs.length === lastMsgCount && box.children.length > 0) return;
+  lastMsgCount = msgs.length;
+
+  box.innerHTML = '';
+  msgs.forEach(function(m){
+    var isOwn = currentUser && m.username === currentUser.username;
+    var time = new Date(m.created_at).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    var initial = (m.username || '?')[0].toUpperCase();
+
+    var div = document.createElement('div');
+    div.className = 'msg' + (isOwn ? ' own' : '');
+    div.innerHTML =
+      '<div class="msg-avatar">' + initial + '</div>' +
+      '<div>' +
+        '<div class="msg-meta"><span>' + escapeHtml(m.username) + '</span><span>' + time + '</span></div>' +
+        '<div class="msg-bubble">' + escapeHtml(m.text) + '</div>' +
+      '</div>';
+    box.appendChild(div);
+  });
+
+  if (wasAtBottom) box.scrollTop = box.scrollHeight;
+}
+
+function escapeHtml(s){
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ═══════════════════════════════════════════
+// SEND MESSAGE
+// ═══════════════════════════════════════════
+var msgInput = document.getElementById('msgInput');
+var sendBtn = document.getElementById('sendBtn');
+
+sendBtn.addEventListener('click', sendMessage);
+msgInput.addEventListener('keydown', function(e){
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+async function sendMessage(){
+  var text = msgInput.value.trim();
+  if (!text || !currentUser) return;
+
+  sendBtn.disabled = true;
+  msgInput.value = '';
+
+  try {
+    await fetch(API + '/send', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ user_id: currentUser.id, text: text }),
+    });
+    await loadMessages();
+  } catch (e) {}
+
+  sendBtn.disabled = false;
+  msgInput.focus();
+}
+
+// ═══════════════════════════════════════════
+// AUTO LOGIN
+// ═══════════════════════════════════════════
+(function autoLogin(){
+  var saved = localStorage.getItem('ipcnei_user');
+  if (saved) {
+    try {
+      var user = JSON.parse(saved);
+      enterChat(user);
+    } catch(e) {}
+  }
+})();
 </script>
 
 </body>
