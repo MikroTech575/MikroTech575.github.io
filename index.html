@@ -22,7 +22,7 @@
     border: 1px solid #f0a; font-size: 14px; pointer-events: auto;
   }
   #roominfo .title { color: #f0a; font-weight: bold; margin-bottom: 4px; }
-  #roominfo .code { font-size: 18px; letter-spacing: 3px; color: #ff0; cursor: pointer; }
+  #roominfo .code { font-size: 20px; letter-spacing: 4px; color: #ff0; cursor: pointer; font-weight: bold; }
 
   #players {
     position: absolute; top: 120px; left: 15px;
@@ -92,20 +92,21 @@
     background: radial-gradient(circle at 50% 30%, #4a1a5a, #100010);
     overflow-y: auto; padding: 30px 20px;
     display: flex; flex-direction: column; align-items: center;
+    justify-content: center;
   }
   #menu.hidden { display: none; }
   #menu h1 {
-    font-size: 64px; margin-bottom: 5px; letter-spacing: 4px;
+    font-size: 56px; margin-bottom: 5px; letter-spacing: 4px;
     background: linear-gradient(90deg, #f0a, #ff0);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 60px rgba(255,0,170,0.5);
   }
-  #menu .sub { color: #c8a; margin-bottom: 30px; font-size: 16px; }
+  #menu .sub { color: #c8a; margin-bottom: 30px; font-size: 16px; text-align: center; }
 
   .panel {
     background: rgba(255,255,255,0.05); padding: 25px; border-radius: 12px;
-    border: 1px solid rgba(255,0,170,0.3); width: 100%; max-width: 480px;
+    border: 1px solid rgba(255,0,170,0.3); width: 100%; max-width: 420px;
     margin-bottom: 20px;
   }
   .panel h2 { color: #f0a; font-size: 18px; margin-bottom: 15px; }
@@ -118,7 +119,7 @@
   }
   .panel input.code {
     text-transform: uppercase; text-align: center; letter-spacing: 6px;
-    font-weight: bold; font-size: 20px;
+    font-weight: bold; font-size: 22px;
   }
   .panel button {
     width: 100%; padding: 12px; font-size: 15px;
@@ -135,36 +136,6 @@
   .panel button.secondary:hover { background: rgba(255,0,170,0.1); }
 
   .or { color: #666; text-align: center; margin: 10px 0; font-size: 12px; }
-
-  #serverList {
-    max-height: 340px; overflow-y: auto;
-    border-radius: 6px;
-  }
-  .server-row {
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    gap: 10px; align-items: center;
-    padding: 10px 12px; margin-bottom: 6px;
-    background: rgba(0,0,0,0.4); border-radius: 6px;
-    border-left: 3px solid #f0a;
-    font-size: 13px;
-  }
-  .server-row:hover { background: rgba(255,0,170,0.1); }
-  .server-row .name { font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .server-row .players { color: #0f0; font-size: 12px; }
-  .server-row .ping { font-size: 12px; min-width: 50px; text-align: right; color: #888; }
-  .server-row .ping.good { color: #0f0; }
-  .server-row .ping.mid { color: #ff0; }
-  .server-row .ping.bad { color: #f55; }
-  .server-row .join {
-    background: #f0a; border: none; padding: 5px 12px; border-radius: 4px;
-    color: #000; font-weight: bold; cursor: pointer; font-family: inherit;
-    font-size: 12px;
-  }
-  .server-row .join:hover { background: #ff44cc; }
-  .empty-list {
-    text-align: center; color: #888; padding: 30px 10px; font-style: italic;
-  }
 
   .status { color: #f0a; font-size: 13px; margin-top: 10px; min-height: 18px; text-align: center; }
   .status.err { color: #f55; }
@@ -213,19 +184,11 @@
   <div class="sub">сетевая тусовка котов · до 10 в комнате</div>
 
   <div class="panel">
-    <h2>🌐 Доступные серверы</h2>
-    <button id="refreshBtn" class="secondary">🔄 Обновить список</button>
-    <div id="serverList">
-      <div class="empty-list">Загрузка...</div>
-    </div>
-  </div>
-
-  <div class="panel">
     <h2>🎮 Играть</h2>
     <input type="text" id="nameInput" placeholder="Твоё имя" maxlength="16">
-    <button id="createBtn">✨ Создать свой сервер</button>
+    <button id="createBtn">✨ Создать комнату</button>
     <div id="createForm">
-      <input type="text" id="serverNameInput" placeholder="Название сервера" maxlength="30">
+      <input type="text" id="serverNameInput" placeholder="Название комнаты" maxlength="30">
       <button id="createConfirm">🚀 Запустить</button>
       <button id="createCancel" class="secondary">Отмена</button>
     </div>
@@ -259,9 +222,16 @@ const JUMP_VEL = 7;
 const GRAVITY = -20;
 const TICK_RATE = 20;
 const CHAT_HISTORY = 60;
-const LOBBY_ID = 'kotost-hangout-lobby-v2';
 const ROOM_PREFIX = 'kotost-hangout-room-';
 const MODEL_URL = './kot.glb';
+
+const ICE_CONFIG = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' }
+  ]
+};
 
 // ============================================================
 //  СОСТОЯНИЕ
@@ -282,8 +252,7 @@ const state = {
     pitch: 0,
     onGround: true,
     lastSent: 0,
-    emote: null,
-    emoteUntil: 0
+    emote: null
   },
   keys: {},
   chatActive: false,
@@ -446,7 +415,6 @@ function addBox(x, y, z, w, h, d, mat, opts = {}) {
   return m;
 }
 
-// Земля
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), grassMat);
 ground.rotation.x = -Math.PI/2;
 ground.receiveShadow = true;
@@ -570,7 +538,7 @@ for (let i = 0; i < 20; i++) {
 scene.add(cloudsGroup);
 
 // ============================================================
-//  МОДЕЛЬ КОТА (kot.glb)
+//  МОДЕЛЬ КОТА
 // ============================================================
 function fallbackCat() {
   const g = new THREE.Group();
@@ -691,209 +659,10 @@ function makeCatInstance(name) {
 }
 
 // ============================================================
-//  ЛОББИ (список серверов)
-// ============================================================
-const lobby = {
-  isMaster: false,
-  servers: new Map(),
-  currentPeer: null,
-  currentConn: null,
-  trying: false,
-  masterInterval: null
-};
-
-function startLobby() {
-  if (lobby.trying) return;
-  lobby.trying = true;
-  console.log('🔍 Ищем лобби...');
-
-  const probePeer = new Peer({ debug: 0 });
-  let finished = false;
-  let failTimer = setTimeout(() => fail(), 4000);
-
-  function fail() {
-    if (finished) return;
-    finished = true;
-    clearTimeout(failTimer);
-    try { probePeer.destroy(); } catch(e) {}
-    setTimeout(() => { lobby.trying = false; becomeLobbyMaster(); }, 500);
-  }
-
-  function success(conn) {
-    if (finished) return;
-    finished = true;
-    clearTimeout(failTimer);
-    lobby.currentPeer = probePeer;
-    lobby.currentConn = conn;
-    lobby.isMaster = false;
-    lobby.trying = false;
-    setupLobbyClient(conn);
-    console.log('📡 Лобби найдено (клиент)');
-  }
-
-  probePeer.on('open', () => {
-    const conn = probePeer.connect(LOBBY_ID, { reliable: true });
-    conn.on('open', () => success(conn));
-    conn.on('error', () => fail());
-  });
-
-  probePeer.on('error', (err) => {
-    console.warn('Probe lobby error:', err.type);
-    fail();
-  });
-}
-
-function becomeLobbyMaster() {
-  if (lobby.isMaster) return;
-  console.log('👑 Пробуем стать мастером лобби');
-
-  const peer = new Peer(LOBBY_ID, { debug: 0 });
-  let resolved = false;
-
-  peer.on('open', () => {
-    if (resolved) return;
-    resolved = true;
-    lobby.isMaster = true;
-    lobby.currentPeer = peer;
-    lobby.currentConn = null;
-    lobby.trying = false;
-    lobby.servers.clear();
-    console.log('✅ Стали мастером лобби');
-
-    peer.on('connection', (conn) => {
-      conn.on('open', () => {
-        try {
-          conn.send({ type: 'server-list', servers: Array.from(lobby.servers.values()) });
-        } catch(e) {}
-      });
-      conn.on('data', (data) => {
-        if (!data || typeof data !== 'object') return;
-        if (data.type === 'register') {
-          lobby.servers.set(data.code, {
-            code: data.code, name: data.name,
-            players: data.players, max: data.max,
-            hostId: data.hostId, lastSeen: Date.now()
-          });
-          broadcastServerList();
-        } else if (data.type === 'update') {
-          const s = lobby.servers.get(data.code);
-          if (s) { s.players = data.players; s.lastSeen = Date.now(); }
-          broadcastServerList();
-        } else if (data.type === 'unregister') {
-          lobby.servers.delete(data.code);
-          broadcastServerList();
-        } else if (data.type === 'get-list') {
-          try {
-            conn.send({ type: 'server-list', servers: Array.from(lobby.servers.values()) });
-          } catch(e) {}
-        }
-      });
-      conn.on('error', () => {});
-    });
-
-    // Автоочистка
-    lobby.masterInterval = setInterval(() => {
-      const now = Date.now();
-      let changed = false;
-      for (const [code, info] of lobby.servers) {
-        if (now - info.lastSeen > 20000) {
-          lobby.servers.delete(code);
-          changed = true;
-        }
-      }
-      if (changed) broadcastServerList();
-    }, 5000);
-  });
-
-  peer.on('error', (err) => {
-    if (resolved) return;
-    console.warn('Lobby master error:', err.type);
-    try { peer.destroy(); } catch(e) {}
-    resolved = true;
-
-    if (err.type === 'unavailable-id') {
-      // Кто-то занял — станем клиентом
-      lobby.trying = false;
-      setTimeout(startLobby, 1500);
-    } else {
-      lobby.trying = false;
-      setTimeout(() => {
-        if (!lobby.isMaster) becomeLobbyMaster();
-      }, 3000);
-    }
-  });
-}
-
-function setupLobbyClient(conn) {
-  conn.on('data', (data) => {
-    if (data && data.type === 'server-list') {
-      lobby.servers.clear();
-      for (const s of data.servers) lobby.servers.set(s.code, s);
-      renderServerList();
-    }
-  });
-
-  conn.on('close', () => {
-    console.log('Мастер лобби ушёл, переподключаемся...');
-    lobby.currentConn = null;
-    if (lobby.currentPeer) try { lobby.currentPeer.destroy(); } catch(e) {}
-    lobby.currentPeer = null;
-    lobby.isMaster = false;
-    lobby.trying = false;
-    setTimeout(startLobby, 1500);
-  });
-
-  conn.on('error', () => {});
-
-  try { conn.send({ type: 'get-list' }); } catch(e) {}
-}
-
-function broadcastServerList() {
-  if (!lobby.isMaster || !lobby.currentPeer) return;
-  const list = { type: 'server-list', servers: Array.from(lobby.servers.values()) };
-  const conns = lobby.currentPeer.connections || {};
-  for (const id in conns) {
-    const arr = conns[id];
-    if (!Array.isArray(arr)) continue;
-    for (const c of arr) {
-      if (c.open) {
-        try { c.send(list); } catch(e) {}
-      }
-    }
-  }
-  renderServerList();
-}
-
-function registerServer(code, name, players, max) {
-  const msg = { type: 'register', code, name, players, max, hostId: state.myId };
-  if (lobby.isMaster) {
-    lobby.servers.set(code, { ...msg, lastSeen: Date.now() });
-    broadcastServerList();
-  } else if (lobby.currentConn && lobby.currentConn.open) {
-    try { lobby.currentConn.send(msg); } catch(e) {}
-  } else {
-    setTimeout(() => {
-      if (state.peer) registerServer(code, name, players, max);
-    }, 1500);
-  }
-}
-
-function updateServerPlayers(code, players) {
-  const msg = { type: 'update', code, players };
-  if (lobby.isMaster) {
-    const s = lobby.servers.get(code);
-    if (s) { s.players = players; s.lastSeen = Date.now(); broadcastServerList(); }
-  } else if (lobby.currentConn && lobby.currentConn.open) {
-    try { lobby.currentConn.send(msg); } catch(e) {}
-  }
-}
-
-// ============================================================
 //  UI
 // ============================================================
 const $ = id => document.getElementById(id);
 const menuEl = $('menu');
-const serverListEl = $('serverList');
 const statusEl = $('status');
 
 function setStatus(t, err = false) {
@@ -905,31 +674,6 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
   }[c]));
-}
-
-function renderServerList() {
-  const list = Array.from(lobby.servers.values())
-    .filter(s => s.players < s.max)
-    .sort((a, b) => b.players - a.players);
-
-  if (list.length === 0) {
-    serverListEl.innerHTML = '<div class="empty-list">Пока нет активных серверов.<br>Создай свой — стань первым! 🐱</div>';
-    return;
-  }
-
-  serverListEl.innerHTML = '';
-  for (const s of list) {
-    const row = document.createElement('div');
-    row.className = 'server-row';
-    row.innerHTML = `
-      <div class="name">${escapeHtml(s.name)}</div>
-      <div class="players">${s.players}/${s.max} 🐱</div>
-      <div class="ping">—</div>
-      <button class="join" data-code="${s.code}">Войти</button>
-    `;
-    row.querySelector('.join').addEventListener('click', () => joinByCode(s.code));
-    serverListEl.appendChild(row);
-  }
 }
 
 // ============================================================
@@ -962,7 +706,7 @@ function tryCreateRoom() {
   }
 
   const peerId = ROOM_PREFIX + state.roomCode;
-  const peer = new Peer(peerId, { debug: 0 });
+  const peer = new Peer(peerId, { debug: 0, config: ICE_CONFIG });
   let resolved = false;
 
   peer.on('open', () => {
@@ -983,8 +727,6 @@ function tryCreateRoom() {
     });
 
     peer.on('error', (err) => console.warn('Peer err (host):', err.type));
-
-    registerServer(state.roomCode, state.roomName, 1, MAX_PLAYERS);
     onConnected('host');
   });
 
@@ -1010,7 +752,7 @@ function joinByCode(code) {
   state.roomCode = code.toUpperCase();
   setStatus('Подключаемся...');
 
-  const peer = new Peer({ debug: 0 });
+  const peer = new Peer({ debug: 0, config: ICE_CONFIG });
   let resolved = false;
 
   peer.on('open', () => {
@@ -1058,7 +800,6 @@ function setupConnection(conn, isIncoming) {
         if (c.data && pid !== conn.peer) list.push({ id: pid, name: c.data.name });
       }
       conn.send({ type: 'players', list });
-      updateServerPlayers(state.roomCode, state.connections.size + 1);
     }
 
     updatePlayerList();
@@ -1076,7 +817,6 @@ function setupConnection(conn, isIncoming) {
       for (const [, cc] of state.connections) {
         try { cc.conn.send({ type: 'player-left', id: conn.peer }); } catch(e) {}
       }
-      updateServerPlayers(state.roomCode, state.connections.size + 1);
     }
     updatePlayerList();
     addChat('sys', 'Кот ушёл 💤');
@@ -1309,7 +1049,6 @@ document.querySelectorAll('#emotePanel button').forEach(b => {
 
 function triggerEmote(name) {
   state.player.emote = name;
-  state.player.emoteUntil = performance.now() + 2000;
   const payload = { type: 'emote', emote: name };
   for (const [, c] of state.connections) {
     try { c.conn.send(payload); } catch(e) {}
@@ -1429,15 +1168,6 @@ animate();
 // ============================================================
 //  UI EVENTS
 // ============================================================
-$('refreshBtn').addEventListener('click', () => {
-  if (lobby.currentConn && lobby.currentConn.open) {
-    try { lobby.currentConn.send({ type: 'get-list' }); } catch(e) {}
-  } else if (!lobby.isMaster && !lobby.trying) {
-    startLobby();
-  }
-  renderServerList();
-});
-
 $('createBtn').addEventListener('click', () => {
   $('createForm').classList.add('active');
   $('serverNameInput').focus();
@@ -1466,10 +1196,8 @@ $('serverNameInput').value = 'Тусовка котиков';
 
 Sound.init();
 
-// Сначала загружаем модель, потом стартуем лобби
 initCatModel().then(() => {
-  console.log('🐱 Модель готова, стартуем лобби');
-  startLobby();
+  console.log('🐱 Модель готова');
 });
 
 addEventListener('resize', () => {
