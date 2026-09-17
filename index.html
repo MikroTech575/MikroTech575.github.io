@@ -178,16 +178,38 @@ const JUMP_VEL = 7;
 const GRAVITY = -20;
 const TICK_RATE = 20;
 const CHAT_HISTORY = 60;
-const ROOM_PREFIX = 'kotost-v3-';
+const ROOM_PREFIX = 'kotost-v4-';
 const MODEL_URL = './kot.glb';
 
+// STUN + TURN для надежного P2P
 const ICE_CONFIG = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' }
+    { urls: 'stun:stun3.l.google.com:19302' },
+    // Бесплатный TURN от Metered — помогает при строгом NAT
+    {
+      urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    }
   ]
+};
+
+// Конфиг PeerJS — используем 1.peerjs.com (стабильнее чем 0.peerjs.com)
+const PEER_CONFIG = {
+  host: '1.peerjs.com',
+  port: 443,
+  secure: true,
+  path: '/',
+  config: ICE_CONFIG,
+  debug: 1
 };
 
 // ============================================================
@@ -380,13 +402,11 @@ function addBox(x, y, z, w, h, d, mat, collide = true) {
   return m;
 }
 
-// Земля
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), grassMat);
 ground.rotation.x = -Math.PI/2;
 ground.receiveShadow = true;
 world.add(ground);
 
-// Забор
 for (let i = -50; i <= 50; i += 5) {
   addBox(i, 0.6, -50, 0.3, 1.2, 0.3, woodMat);
   addBox(i, 0.6,  50, 0.3, 1.2, 0.3, woodMat);
@@ -394,7 +414,6 @@ for (let i = -50; i <= 50; i += 5) {
   addBox( 50, 0.6, i, 0.3, 1.2, 0.3, woodMat);
 }
 
-// Домики
 function buildHouse(cx, cz, w, d, h) {
   addBox(cx, h/2, cz - d/2, w, h, 0.4, brickMat);
   addBox(cx, h/2, cz + d/2, w, h, 0.4, brickMat);
@@ -411,7 +430,6 @@ buildHouse( 25, -20, 6, 6, 4);
 buildHouse( 25,  20, 6, 6, 4);
 buildHouse(-25,  20, 6, 6, 4);
 
-// Деревья
 function buildTree(x, z) {
   addBox(x, 1, z, 0.5, 2, 0.5, woodMat);
   const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2a5a2a, roughness: 1 });
@@ -429,7 +447,6 @@ for (let i = 0; i < 20; i++) {
   buildTree(Math.cos(a)*r, Math.sin(a)*r);
 }
 
-// Костёр
 const fireGroup = new THREE.Group();
 world.add(fireGroup);
 
@@ -460,7 +477,6 @@ const flame = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.4, 8), flameMat);
 flame.position.y = 0.9;
 fireGroup.add(flame);
 
-// Скамейки
 function buildBench(x, z, rot) {
   const g = new THREE.Group();
   const seat = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 0.6), woodMat);
@@ -483,7 +499,6 @@ buildBench( 8, -8, -Math.PI/4);
 buildBench(-8,  8, Math.PI - Math.PI/4);
 buildBench( 8,  8, Math.PI + Math.PI/4);
 
-// Облака
 const cloudsGroup = new THREE.Group();
 for (let i = 0; i < 20; i++) {
   const g = new THREE.Group();
@@ -651,9 +666,9 @@ function createRoom() {
   setStatus('Создаём комнату...');
 
   const peerId = ROOM_PREFIX + state.roomCode;
-  console.log('🎮 Создаю комнату:', peerId);
+  console.log('🎮 Создаю комнату:', peerId, 'через 1.peerjs.com');
 
-  const peer = new Peer(peerId, { debug: 1, config: ICE_CONFIG });
+  const peer = new Peer(peerId, PEER_CONFIG);
   let resolved = false;
 
   peer.on('open', (id) => {
@@ -668,10 +683,10 @@ function createRoom() {
   });
 
   peer.on('error', (err) => {
-    console.error('❌ Ошибка создания:', err.type);
+    console.error('❌ Ошибка создания:', err.type, err);
     if (resolved) return;
     try { peer.destroy(); } catch(e) {}
-    setStatus('Ошибка: ' + err.type, true);
+    setStatus('Ошибка: ' + err.type + '. Попробуй ещё раз.', true);
   });
 
   peer.on('disconnected', () => {
@@ -699,7 +714,7 @@ function joinByCode(code) {
   setStatus('Подключаемся...');
   console.log('🔗 Подключаюсь к:', ROOM_PREFIX + state.roomCode);
 
-  const peer = new Peer({ debug: 1, config: ICE_CONFIG });
+  const peer = new Peer(PEER_CONFIG);
   let resolved = false;
 
   peer.on('open', (id) => {
@@ -712,7 +727,7 @@ function joinByCode(code) {
 
     const timeout = setTimeout(() => {
       if (!conn.open && !resolved) {
-        setStatus('Таймаут подключения', true);
+        setStatus('Таймаут подключения. Комната не найдена?', true);
         try { peer.destroy(); } catch(e) {}
       }
     }, 15000);
@@ -726,7 +741,7 @@ function joinByCode(code) {
   });
 
   peer.on('error', (err) => {
-    console.error('❌ Ошибка:', err.type);
+    console.error('❌ Ошибка:', err.type, err);
     if (resolved) return;
     if (err.type === 'peer-unavailable') {
       setStatus('Комната не найдена', true);
@@ -856,7 +871,9 @@ function onConnected(role) {
   addChat('sys', 'Жми / для чата, U для музыки');
 
   updatePlayerList();
-  setTimeout(() => renderer.domElement.requestPointerLock(), 100);
+  setTimeout(() => {
+    try { renderer.domElement.requestPointerLock(); } catch(e) {}
+  }, 100);
 }
 
 $('roomCode').addEventListener('click', () => {
@@ -917,7 +934,7 @@ function closeChat(send) {
     if (text) sendChat(text);
   }
   chatInput.value = '';
-  renderer.domElement.requestPointerLock();
+  try { renderer.domElement.requestPointerLock(); } catch(e) {}
 }
 
 function sendChat(text) {
@@ -988,7 +1005,7 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('click', () => {
   if (!state.chatActive && menuEl.classList.contains('hidden')) {
     if (document.pointerLockElement !== renderer.domElement) {
-      renderer.domElement.requestPointerLock();
+      try { renderer.domElement.requestPointerLock(); } catch(e) {}
     }
   }
 });
