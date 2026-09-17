@@ -178,16 +178,15 @@ const JUMP_VEL = 7;
 const GRAVITY = -20;
 const TICK_RATE = 20;
 const CHAT_HISTORY = 60;
-const ROOM_PREFIX = 'kotost-v5-';
+const ROOM_PREFIX = 'kotost-v6-';
 const MODEL_URL = './kot.glb';
 
-// STUN + TURN для надежного P2P
+// ⚡ STUN + TURN — обходят NAT и блокировки провайдера
 const ICE_CONFIG = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
     {
       urls: 'turn:openrelay.metered.ca:80',
       username: 'openrelayproject',
@@ -197,18 +196,20 @@ const ICE_CONFIG = {
       urls: 'turn:openrelay.metered.ca:443',
       username: 'openrelayproject',
       credential: 'openrelayproject'
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
     }
   ]
 };
 
-// ⚡ СВОЙ PeerServer на Cloudflare Workers
+// ⚡ Публичный PeerJS без своего сервера — просто работает
 const PEER_CONFIG = {
-  host: 'kotosthangout.mikrotechh.workers.dev',
-  port: 443,
-  secure: true,
-  path: '/',
   config: ICE_CONFIG,
   debug: 1
+  // host/port/path НЕ указаны → PeerJS использует 0.peerjs.com по умолчанию
 };
 
 // ============================================================
@@ -665,7 +666,7 @@ function createRoom() {
   setStatus('Создаём комнату...');
 
   const peerId = ROOM_PREFIX + state.roomCode;
-  console.log('🎮 Создаю комнату:', peerId, 'через', PEER_CONFIG.host);
+  console.log('🎮 Создаю комнату:', peerId, '(публичный PeerJS + TURN)');
 
   const peer = new Peer(peerId, PEER_CONFIG);
   let resolved = false;
@@ -729,7 +730,7 @@ function joinByCode(code) {
         setStatus('Таймаут подключения. Комната не найдена?', true);
         try { peer.destroy(); } catch(e) {}
       }
-    }, 15000);
+    }, 20000);
 
     conn.on('open', () => {
       resolved = true;
