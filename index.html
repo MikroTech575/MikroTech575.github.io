@@ -178,7 +178,7 @@ const JUMP_VEL = 7;
 const GRAVITY = -20;
 const TICK_RATE = 20;
 const CHAT_HISTORY = 60;
-const ROOM_PREFIX = 'kotost-v4-';
+const ROOM_PREFIX = 'kotost-v5-';
 const MODEL_URL = './kot.glb';
 
 // STUN + TURN для надежного P2P
@@ -188,7 +188,6 @@ const ICE_CONFIG = {
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
     { urls: 'stun:stun3.l.google.com:19302' },
-    // Бесплатный TURN от Metered — помогает при строгом NAT
     {
       urls: 'turn:openrelay.metered.ca:80',
       username: 'openrelayproject',
@@ -202,9 +201,9 @@ const ICE_CONFIG = {
   ]
 };
 
-// Конфиг PeerJS — используем 1.peerjs.com (стабильнее чем 0.peerjs.com)
+// ⚡ СВОЙ PeerServer на Cloudflare Workers
 const PEER_CONFIG = {
-  host: '1.peerjs.com',
+  host: 'kotosthangout.mikrotechh.workers.dev',
   port: 443,
   secure: true,
   path: '/',
@@ -666,7 +665,7 @@ function createRoom() {
   setStatus('Создаём комнату...');
 
   const peerId = ROOM_PREFIX + state.roomCode;
-  console.log('🎮 Создаю комнату:', peerId, 'через 1.peerjs.com');
+  console.log('🎮 Создаю комнату:', peerId, 'через', PEER_CONFIG.host);
 
   const peer = new Peer(peerId, PEER_CONFIG);
   let resolved = false;
